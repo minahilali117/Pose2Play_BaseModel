@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pose2Play - Pose Detection Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #webcam {
+            display: none;
+        }
+
+        #canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        button.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        button.primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        button.secondary:hover {
+            background: #38a169;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        select {
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .feedback-box {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .feedback-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Gamification Panel */
+        .gamification-panel {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .gamification-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .reward-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .reward-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .reward-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .reward-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .achievement-list {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .achievement-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* Adaptive Learning Panel */
+        .adaptive-panel {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .adaptive-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .adaptive-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .adaptive-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .adaptive-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .adaptive-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .session-log {
+            background: rgba(255,255,255,0.15);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏋️ Pose2Play Base Model</h1>
+        <p class="subtitle">Real-time Pose Detection for Exercise Tracking</p>
+
+        <div id="status" class="status loading">Initializing camera...</div>
+
+        <div class="video-container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="primary" onclick="startDetection()">Start Detection</button>
+            <button id="stopBtn" class="primary" onclick="stopDetection()" disabled>Stop Detection</button>
+            <select id="exerciseSelect" onchange="changeExercise()">
+                <option value="squat">Squat (Knee Exercise)</option>
+                <option value="hip">Hip Flexion</option>
+                <option value="shoulder">Shoulder Raise</option>
+            </select>
+            <button class="secondary" onclick="resetExercise()">Reset Count</button>
+            <button class="secondary" onclick="testGamification()" style="background: #10b981;">🎮 Test Gamification</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Reps Completed</div>
+                <div class="stat-value" id="repCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current Angle</div>
+                <div class="stat-value" id="currentAngle">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Target Angle</div>
+                <div class="stat-value" id="targetAngle">90°</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Recovery Points (RP)</div>
+                <div class="stat-value" id="rpDisplay">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="levelDisplay">1</div>
+            </div>
+        </div>
+
+        <div class="feedback-box">
+            <div class="feedback-text" id="feedback">Select an exercise and click Start Detection</div>
+        </div>
+
+        <!-- Gamification Panel -->
+        <div class="gamification-panel">
+            <div class="gamification-header">🎮 Gamification & Rewards</div>
+            <div class="reward-stats">
+                <div class="reward-item">
+                    <div class="reward-label">Total RP</div>
+                    <div class="reward-value" id="totalRP">0</div>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-label">Level</div>
+                    <div class="reward-value" id="currentLevel">1</div>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-label">Streak</div>
+                    <div class="reward-value" id="streakDays">0 🔥</div>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-label">Session RP</div>
+                    <div class="reward-value" id="sessionRP">0</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-bottom: 10px;">
+                <strong>Level Progress:</strong> <span id="levelName">Building Foundation</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="levelProgress" style="width: 0%"></div>
+            </div>
+            <div style="margin-top: 15px;">
+                <strong>🏆 Recent Achievements:</strong>
+                <div class="achievement-list" id="achievementList">
+                    <div style="text-align: center; opacity: 0.7;">Complete a session to unlock achievements!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adaptive Learning Panel -->
+        <div class="adaptive-panel">
+            <div class="adaptive-header">🧠 Adaptive Learning System</div>
+            <div class="adaptive-stats">
+                <div class="adaptive-item">
+                    <div class="adaptive-label">Standard Target</div>
+                    <div class="adaptive-value" id="standardTarget">90°</div>
+                </div>
+                <div class="adaptive-item">
+                    <div class="adaptive-label">Your Target</div>
+                    <div class="adaptive-value" id="personalTarget">90°</div>
+                </div>
+                <div class="adaptive-item">
+                    <div class="adaptive-label">Best Angle</div>
+                    <div class="adaptive-value" id="bestAngle">--</div>
+                </div>
+                <div class="adaptive-item">
+                    <div class="adaptive-label">Avg Angle</div>
+                    <div class="adaptive-value" id="avgAngle">--</div>
+                </div>
+                <div class="adaptive-item">
+                    <div class="adaptive-label">Consistency</div>
+                    <div class="adaptive-value" id="consistency">--</div>
+                </div>
+                <div class="adaptive-item">
+                    <div class="adaptive-label">Difficulty</div>
+                    <div class="adaptive-value" id="difficultyLevel">Beginner</div>
+                </div>
+            </div>
+            <div class="session-log" id="adaptiveLog">
+                <div style="text-align: center; opacity: 0.7;">Adaptive system will track your progress...</div>
+            </div>
+        </div>
+
+        <!-- Form Quality Panel (NEW!) -->
+        <div class="form-quality-panel" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px;">
+            <div style="font-size: 18px; font-weight: 600; color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+                ✅ Form Quality Analysis
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Form Quality</div>
+                    <div id="formQuality" style="font-size: 32px; font-weight: 700; color: #10b981;">--</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Status</div>
+                    <div id="formStatus" style="font-size: 16px; font-weight: 600; color: #10b981;">Ready</div>
+                </div>
+            </div>
+            <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                <div style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">💡 Real-Time Feedback:</div>
+                <div id="formFeedback" style="font-size: 13px; color: #475569;">
+                    Start exercising to get form feedback...
+                </div>
+            </div>
+            <div style="background: #fef3c7; padding: 12px; border-radius: 8px; display: none;" id="formCorrectionPanel">
+                <div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 8px;">⚠️ Corrections Needed:</div>
+                <div id="formCorrections" style="font-size: 13px; color: #78350f;">
+                </div>
+            </div>
+            <div style="background: #dbeafe; padding: 12px; border-radius: 8px; margin-top: 10px;" id="formTipsPanel">
+                <div style="font-size: 14px; font-weight: 600; color: #1e40af; margin-bottom: 8px;">💡 Tips to Improve Form:</div>
+                <div id="formTips" style="font-size: 13px; color: #1e3a8a; line-height: 1.6;">
+                    Select an exercise and start moving to get personalized tips...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { FilesetResolver, PoseLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21';
+
+        let poseLandmarker;
+        let webcam;
+        let canvas;
+        let ctx;
+        let animationId;
+        let currentExercise = 'squat';
+        let repCount = 0;
+        let currentState = 'STANDING';
+
+        // Adaptive learning tracking
+        let sessionAngles = [];
+        let sessionReps = [];
+        let personalTarget = 90;
+        let sessionStartTime = null;
+
+        // Gamification tracking
+        let userRewards = {
+            totalRP: 0,
+            currentLevel: 1,
+            streakDays: 0,
+            sessionRP: 0
+        };
+
+        // ========== RL INTEGRATION ==========
+        
+        // Get RL action for difficulty adjustment
+        async function getRLAction(userState) {
+            try {
+                const response = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state: userState })
+                });
+                
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                console.log('✅ RL API Response:', data);
+                return data.action; // 0-4
+            } catch (error) {
+                console.warn('⚠️ RL API unavailable, using rule-based system:', error.message);
+                return null;
+            }
+        }
+
+        // Calculate consistency from session history
+        function getConsistency(history) {
+            if (history.length < 2) return 0.5;
+            const angles = history.map(r => r.angle || 0);
+            const mean = angles.reduce((a, b) => a + b, 0) / angles.length;
+            const variance = angles.reduce((sum, angle) => sum + Math.pow(angle - mean, 2), 0) / angles.length;
+            const stdDev = Math.sqrt(variance);
+            return Math.max(0, 1 - (stdDev / mean));
+        }
+
+        // Calculate fatigue level from session history
+        function getFatigue(history) {
+            if (history.length < 5) return 0;
+            const recent5 = history.slice(-5).map(r => r.angle || 0);
+            const earlier5 = history.slice(0, 5).map(r => r.angle || 0);
+            const recentAvg = recent5.reduce((a, b) => a + b, 0) / recent5.length;
+            const earlierAvg = earlier5.reduce((a, b) => a + b, 0) / earlier5.length;
+            const deterioration = (earlierAvg - recentAvg) / earlierAvg;
+            return Math.max(0, Math.min(1, deterioration));
+        }
+
+        // Calculate success rate from session history
+        function getSuccessRate(history) {
+            if (history.length === 0) return 0.5;
+            const successful = history.filter(r => r.quality === 'good' || r.quality === 'perfect').length;
+            return successful / history.length;
+        }
+
+        // Apply RL action every 5 reps
+        async function applyRLAdjustment(repCount, userHistory, currentTarget) {
+            if (repCount % 5 !== 0) return currentTarget;
+            
+            // Pad userHistory to have at least 10 entries
+            const paddedHistory = [...userHistory];
+            while (paddedHistory.length < 10) {
+                paddedHistory.unshift({ angle: currentTarget, quality: 'neutral' });
+            }
+            
+            // Build state from user history (20 dimensions)
+            const last10Angles = paddedHistory.slice(-10).map(r => r.angle || currentTarget);
+            const consistency = getConsistency(paddedHistory);
+            const fatigue = getFatigue(paddedHistory);
+            const sessionTimeNorm = sessionStartTime ? Math.min((Date.now() - sessionStartTime) / 60000, 1) : 0; // 0-1 (max 1 minute)
+            const baseline = paddedHistory[0]?.angle || currentTarget;
+            const repsNorm = Math.min(repCount, 99) / 100;
+            const successRate = getSuccessRate(paddedHistory);
+            
+            const state = [
+                ...last10Angles,        // 10 dimensions: last 10 angles
+                consistency,             // 1 dimension: consistency score
+                fatigue,                 // 1 dimension: fatigue level
+                sessionTimeNorm,         // 1 dimension: session time (0-1)
+                currentTarget,           // 1 dimension: current target angle
+                baseline,                // 1 dimension: baseline angle
+                repsNorm,                // 1 dimension: reps completed (0-1)
+                successRate,             // 1 dimension: success rate
+                0,                       // 1 dimension: padding
+                0,                       // 1 dimension: padding
+                0                        // 1 dimension: padding
+            ];
+            
+            console.log('📊 RL State:', {
+                repCount,
+                last10Angles: last10Angles.slice(0, 3) + '...',
+                consistency: consistency.toFixed(2),
+                fatigue: fatigue.toFixed(2),
+                currentTarget,
+                successRate: successRate.toFixed(2)
+            });
+            
+            // Get RL action
+            const action = await getRLAction(state.slice(0, 20));  // 20-dim state
+            
+            if (action === null) return currentTarget; // Fallback to rule-based
+            
+            // Apply action
+            let newTarget = currentTarget;
+            let actionMessage = '';
+            
+            switch(action) {
+                case 0: // Decrease difficulty (easier)
+                    newTarget = currentTarget + 5;
+                    actionMessage = '📉 RL: Making it easier (+5°)';
+                    addAdaptiveLog(actionMessage);
+                    break;
+                case 1: // Maintain
+                    newTarget = currentTarget;
+                    actionMessage = '➡️ RL: Maintaining difficulty';
+                    console.log(actionMessage);
+                    break;
+                case 2: // Increase difficulty (harder)
+                    newTarget = currentTarget - 5;
+                    actionMessage = '📈 RL: Increasing challenge (-5°)';
+                    addAdaptiveLog(actionMessage);
+                    break;
+                case 3: // Rest break
+                    actionMessage = '⏸️ RL: Take a 30-second rest!';
+                    addAdaptiveLog(actionMessage);
+                    showRestBreakNotification();
+                    break;
+                case 4: // Encouragement
+                    actionMessage = '💪 RL: You\'re doing great! Keep it up!';
+                    addAchievementLog(actionMessage);
+                    break;
+            }
+            
+            console.log('🎯 RL Action:', action, actionMessage);
+            return newTarget;
+        }
+
+        // Show rest break notification
+        function showRestBreakNotification() {
+            updateFeedback('⏸️ Take a 30-second rest!');
+            setTimeout(() => {
+                updateFeedback('Ready to continue!');
+            }, 30000);
+        }
+
+        // ========== END RL INTEGRATION ==========
+
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            webcam = document.getElementById('webcam');
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+
+            try {
+                // Request camera access
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                webcam.srcObject = stream;
+                
+                // Initialize MediaPipe
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
+                );
+                
+                poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task`
+                    },
+                    runningMode: "VIDEO",
+                    numPoses: 1
+                });
+
+                updateStatus('ready', 'Ready! Click Start Detection');
+                document.getElementById('startBtn').disabled = false;
+            } catch (error) {
+                updateStatus('error', 'Error: ' + error.message);
+                console.error(error);
+            }
+        });
+
+        // Start detection
+        window.startDetection = () => {
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            sessionStartTime = Date.now();
+            sessionAngles = [];
+            sessionReps = [];
+            userRewards.sessionRP = 0;
+            
+            addAdaptiveLog(`Session started - Target: ${personalTarget}°`);
+            addAchievementLog('🏁 Session started! Time to exercise!');
+            
+            detectPose();
+        };
+
+        // Stop detection
+        window.stopDetection = () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            updateFeedback('Detection stopped');
+        };
+
+        // Reset exercise
+        window.resetExercise = () => {
+            repCount = 0;
+            currentState = 'STANDING';
+            sessionAngles = [];
+            sessionReps = [];
+            userRewards.sessionRP = 0;
+            
+            document.getElementById('repCount').textContent = '0';
+            document.getElementById('sessionRP').textContent = '0';
+            document.getElementById('bestAngle').textContent = '--';
+            document.getElementById('avgAngle').textContent = '--';
+            document.getElementById('consistency').textContent = '--';
+            
+            updateFeedback('Exercise reset');
+            addAdaptiveLog('Session reset - Ready for new session');
+        };
+
+        // Change exercise
+        window.changeExercise = () => {
+            currentExercise = document.getElementById('exerciseSelect').value;
+            resetExercise();
+            
+            // Update target angle display
+            const targets = { squat: '90°', hip: '90°', shoulder: '90°' };
+            document.getElementById('targetAngle').textContent = targets[currentExercise];
+        };
+
+        // Main detection loop
+        function detectPose() {
+            if (webcam.readyState >= 2) {
+                const result = poseLandmarker.detectForVideo(webcam, performance.now());
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+
+                if (result.landmarks && result.landmarks.length > 0) {
+                    const landmarks = result.landmarks[0];
+                    
+                    // Draw skeleton
+                    drawSkeleton(landmarks);
+                    
+                    // Process exercise
+                    processExercise(landmarks);
+                }
+            }
+            
+            animationId = requestAnimationFrame(detectPose);
+        }
+
+        // Draw skeleton
+        function drawSkeleton(landmarks) {
+            // Draw connections
+            const connections = [
+                [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+                [11, 23], [12, 24], [23, 24],
+                [23, 25], [24, 26], [25, 27], [26, 28]
+            ];
+
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+
+            connections.forEach(([start, end]) => {
+                const startPoint = landmarks[start];
+                const endPoint = landmarks[end];
+                
+                ctx.beginPath();
+                ctx.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
+                ctx.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
+                ctx.stroke();
+            });
+
+            // Draw joints
+            ctx.fillStyle = '#ff6b6b';
+            landmarks.forEach((landmark, idx) => {
+                if (idx > 10) { // Skip face landmarks
+                    ctx.beginPath();
+                    ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            });
+        }
+
+        // Process exercise logic
+        function processExercise(landmarks) {
+            let angle = 0;
+            
+            if (currentExercise === 'squat') {
+                // Calculate knee angle
+                angle = calculateAngle(landmarks[23], landmarks[25], landmarks[27]);
+                checkSquat(angle);
+            } else if (currentExercise === 'hip') {
+                // Calculate hip angle
+                angle = calculateAngle(landmarks[11], landmarks[23], landmarks[25]);
+                checkHipExercise(angle);
+            } else if (currentExercise === 'shoulder') {
+                // Calculate shoulder angle
+                angle = calculateAngle(landmarks[23], landmarks[11], landmarks[13]);
+                checkShoulderExercise(angle);
+            }
+            
+            document.getElementById('currentAngle').textContent = Math.round(angle) + '°';
+        }
+
+        // Form analysis function (NEW!)
+        let lastFormCheck = 0;
+
+        // Generate helpful tips based on form analysis
+        function generateFormTips(result, currentAngle) {
+            const quality = parseFloat(result.form_quality);
+            const issues = result.issues || [];
+            const tips = [];
+
+            // Exercise-specific tips
+            if (currentExercise === 'squat') {
+                if (quality >= 95) {
+                    tips.push('🌟 <strong>Excellent!</strong> Maintain this form.');
+                    tips.push('• Keep your chest up and core engaged');
+                    tips.push('• Breathe out as you rise');
+                } else if (quality >= 85) {
+                    tips.push('👍 <strong>Good form!</strong> Minor adjustments:');
+                    if (currentAngle > 100) {
+                        tips.push('• Go slightly deeper (aim for 90° knee angle)');
+                    }
+                    tips.push('• Keep knees aligned with toes');
+                    tips.push('• Maintain steady breathing rhythm');
+                } else if (quality >= 70) {
+                    tips.push('⚡ <strong>Needs improvement:</strong>');
+                    if (currentAngle > 110) {
+                        tips.push('• <strong>Squat deeper</strong> - aim for thighs parallel to ground');
+                    }
+                    if (issues.includes('asymmetry')) {
+                        tips.push('• <strong>Balance evenly</strong> - distribute weight on both legs');
+                    }
+                    if (issues.includes('fast_movement')) {
+                        tips.push('• <strong>Slow down</strong> - take 2-3 seconds per rep');
+                    }
+                    tips.push('• Focus on controlled movement');
+                } else {
+                    tips.push('⚠️ <strong>Form needs work:</strong>');
+                    tips.push('• <strong>Lower depth:</strong> Bend knees to ~90°');
+                    tips.push('• <strong>Keep back straight:</strong> Don\'t lean forward');
+                    tips.push('• <strong>Feet position:</strong> Shoulder-width apart');
+                    tips.push('• <strong>Slow tempo:</strong> 2 seconds down, 2 seconds up');
+                }
+            } else if (currentExercise === 'hip') {
+                if (quality >= 95) {
+                    tips.push('🌟 <strong>Perfect!</strong> Keep it up.');
+                    tips.push('• Maintain hip stability');
+                    tips.push('• Control the movement throughout');
+                } else if (quality >= 85) {
+                    tips.push('👍 <strong>Great work!</strong> Fine-tune:');
+                    tips.push('• Keep your core tight');
+                    tips.push('• Move through full range of motion');
+                } else if (quality >= 70) {
+                    tips.push('⚡ <strong>Improve your form:</strong>');
+                    if (currentAngle > 100) {
+                        tips.push('• <strong>Lift higher</strong> - aim for 90° hip angle');
+                    }
+                    tips.push('• Keep pelvis stable (don\'t rotate)');
+                    tips.push('• Move smoothly, not jerky');
+                } else {
+                    tips.push('⚠️ <strong>Focus on basics:</strong>');
+                    tips.push('• <strong>Hip lift:</strong> Raise leg to hip level (90°)');
+                    tips.push('• <strong>Stay stable:</strong> Don\'t wobble or twist');
+                    tips.push('• <strong>Controlled pace:</strong> 2-3 seconds per rep');
+                }
+            } else if (currentExercise === 'shoulder') {
+                if (quality >= 95) {
+                    tips.push('🌟 <strong>Excellent!</strong> Perfect shoulder form.');
+                    tips.push('• Keep shoulder blades stable');
+                    tips.push('• Maintain smooth rhythm');
+                } else if (quality >= 85) {
+                    tips.push('👍 <strong>Good job!</strong> Small tweaks:');
+                    tips.push('• Keep elbows slightly bent');
+                    tips.push('• Avoid shrugging shoulders');
+                } else if (quality >= 70) {
+                    tips.push('⚡ <strong>Adjust your form:</strong>');
+                    if (currentAngle < 80) {
+                        tips.push('• <strong>Raise higher</strong> - lift arm to shoulder level');
+                    }
+                    tips.push('• Keep wrist aligned with shoulder');
+                    tips.push('• Don\'t arch your back');
+                } else {
+                    tips.push('⚠️ <strong>Form corrections needed:</strong>');
+                    tips.push('• <strong>Arm height:</strong> Lift to 90° (shoulder level)');
+                    tips.push('• <strong>Control:</strong> Slow, controlled movement');
+                    tips.push('• <strong>Posture:</strong> Stand tall, core engaged');
+                }
+            }
+
+            // General tips based on issues
+            if (issues.includes('fast_movement') && quality < 90) {
+                tips.push('');
+                tips.push('🐌 <strong>Speed tip:</strong> Quality over speed - slower is better!');
+            }
+            if (issues.includes('asymmetry') && quality < 90) {
+                tips.push('');
+                tips.push('⚖️ <strong>Balance tip:</strong> Use mirror to check symmetry.');
+            }
+
+            return tips.join('<br>');
+        }
+
+        async function analyzeForm(currentAngle) {
+            // Check form every 2 seconds
+            const now = Date.now();
+            if (now - lastFormCheck < 2000) return;
+            lastFormCheck = now;
+
+            try {
+                // Build angles object for form analysis
+                const angles = {};
+                if (currentExercise === 'squat') {
+                    angles.knee_left = currentAngle;
+                    angles.knee_right = currentAngle; // Using same for demo
+                } else if (currentExercise === 'hip') {
+                    angles.hip_left = currentAngle;
+                } else if (currentExercise === 'shoulder') {
+                    angles.shoulder_left = currentAngle;
+                }
+
+                // Calculate movement speed (using time between reps)
+                const movementSpeed = sessionReps.length > 1 
+                    ? (sessionReps[sessionReps.length - 1].timestamp - sessionReps[sessionReps.length - 2].timestamp) / 1000
+                    : 3.0;
+
+                // Call simplified form API
+                const response = await fetch('http://localhost:5000/predict_form_simple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        angles: angles,
+                        movement_speed: movementSpeed,
+                        exercise_type: currentExercise === 'hip' ? 'hip_abduction_left' : currentExercise
+                    })
+                });
+
+                if (!response.ok) {
+                    console.log('[Form API] Not available (using offline mode)');
+                    return;
+                }
+
+                const result = await response.json();
+
+                // Update UI
+                const formQualityEl = document.getElementById('formQuality');
+                const formStatusEl = document.getElementById('formStatus');
+                const formFeedbackEl = document.getElementById('formFeedback');
+                const formCorrectionsEl = document.getElementById('formCorrections');
+                const formCorrectionPanel = document.getElementById('formCorrectionPanel');
+                const formTipsEl = document.getElementById('formTips');
+
+                // Update quality score
+                formQualityEl.textContent = result.form_quality;
+                formQualityEl.style.color = result.is_correct ? '#10b981' : '#ef4444';
+
+                // Update status
+                formStatusEl.textContent = result.is_correct ? '✅ Correct' : '⚠️ Needs Work';
+                formStatusEl.style.color = result.is_correct ? '#10b981' : '#ef4444';
+
+                // Update feedback
+                if (result.feedback && result.feedback.length > 0) {
+                    formFeedbackEl.innerHTML = result.feedback.join('<br>');
+                }
+
+                // Show/hide corrections
+                if (result.corrections && result.corrections.length > 0) {
+                    formCorrectionPanel.style.display = 'block';
+                    formCorrectionsEl.innerHTML = result.corrections.join('<br>');
+                } else {
+                    formCorrectionPanel.style.display = 'none';
+                }
+
+                // Generate helpful tips based on form quality and issues
+                const tips = generateFormTips(result, currentAngle);
+                formTipsEl.innerHTML = tips;
+
+                console.log('[Form Analysis]', result);
+
+            } catch (error) {
+                console.log('[Form API] Error:', error.message);
+                // Fail silently - form analysis is optional
+            }
+        }
+
+        // Squat checker
+        function checkSquat(kneeAngle) {
+            // Track angles for adaptive learning
+            sessionAngles.push(kneeAngle);
+            updateAdaptiveDisplay();
+
+            // Analyze form (NEW!)
+            analyzeForm(kneeAngle);
+
+            if (currentState === 'STANDING' && kneeAngle < 160) {
+                currentState = 'DESCENDING';
+                updateFeedback('Go down lower!');
+            } else if (currentState === 'DESCENDING' && kneeAngle < personalTarget) {
+                currentState = 'SQUATTING';
+                updateFeedback(`Excellent! Hit target: ${Math.round(kneeAngle)}°`);
+            } else if (currentState === 'SQUATTING' && kneeAngle > 160) {
+                currentState = 'STANDING';
+                
+                // Track rep data
+                const repData = {
+                    angle: Math.min(...sessionAngles.slice(-30)), // Best angle in last 30 frames
+                    timestamp: Date.now(),
+                    targetAngle: personalTarget
+                };
+                sessionReps.push(repData);
+                
+                // Award RP for the rep
+                const rpEarned = calculateRepRP(repData);
+                userRewards.sessionRP += rpEarned;
+                userRewards.totalRP += rpEarned;
+                
+                repCount++;
+                document.getElementById('repCount').textContent = repCount;
+                document.getElementById('sessionRP').textContent = userRewards.sessionRP;
+                document.getElementById('totalRP').textContent = userRewards.totalRP;
+                
+                updateFeedback(`Rep completed! +${rpEarned} RP`);
+                addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
+                
+                // RL ADJUSTMENT: Apply every 5 reps
+                if (repCount % 5 === 0) {
+                    // Add quality assessment to session reps
+                    sessionReps.forEach(rep => {
+                        const diff = Math.abs(rep.angle - rep.targetAngle);
+                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
+                    });
+                    
+                    applyRLAdjustment(repCount, sessionReps, personalTarget).then(newTarget => {
+                        if (newTarget !== personalTarget) {
+                            personalTarget = newTarget;
+                            document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
+                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Calculate RP for a single rep
+        function calculateRepRP(repData) {
+            let rp = 10; // Base RP
+            
+            // Bonus for good form (within 10° of target)
+            const difference = Math.abs(repData.angle - repData.targetAngle);
+            if (difference <= 5) {
+                rp += 10; // Perfect form
+            } else if (difference <= 10) {
+                rp += 5; // Good form
+            }
+            
+            return rp;
+        }
+
+        // Hip exercise checker
+        // Hip exercise checker
+        function checkHipExercise(hipAngle) {
+            // Track angles for adaptive learning
+            sessionAngles.push(hipAngle);
+            updateAdaptiveDisplay();
+
+            // Analyze form (NEW!)
+            analyzeForm(hipAngle);
+
+            if (currentState === 'STANDING' && hipAngle < 150) {
+                currentState = 'LIFTING';
+                updateFeedback('Keep lifting!');
+            } else if (currentState === 'LIFTING' && hipAngle < personalTarget) {
+                currentState = 'TARGET';
+                updateFeedback(`Perfect! Hit target: ${Math.round(hipAngle)}°`);
+            } else if (currentState === 'TARGET' && hipAngle > 170) {
+                currentState = 'STANDING';
+                
+                // Track rep data
+                const repData = {
+                    angle: Math.min(...sessionAngles.slice(-30)),
+                    timestamp: Date.now(),
+                    targetAngle: personalTarget
+                };
+                sessionReps.push(repData);
+                
+                // Award RP for the rep
+                const rpEarned = calculateRepRP(repData);
+                userRewards.sessionRP += rpEarned;
+                userRewards.totalRP += rpEarned;
+                
+                repCount++;
+                document.getElementById('repCount').textContent = repCount;
+                document.getElementById('sessionRP').textContent = userRewards.sessionRP;
+                document.getElementById('totalRP').textContent = userRewards.totalRP;
+                
+                updateFeedback(`Rep completed! +${rpEarned} RP`);
+                addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
+                
+                // RL ADJUSTMENT: Apply every 5 reps
+                if (repCount % 5 === 0) {
+                    sessionReps.forEach(rep => {
+                        const diff = Math.abs(rep.angle - rep.targetAngle);
+                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
+                    });
+                    
+                    applyRLAdjustment(repCount, sessionReps, personalTarget).then(newTarget => {
+                        if (newTarget !== personalTarget) {
+                            personalTarget = newTarget;
+                            document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
+                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Shoulder exercise checker
+        // Shoulder exercise checker
+        function checkShoulderExercise(shoulderAngle) {
+            // Track angles for adaptive learning
+            sessionAngles.push(shoulderAngle);
+            updateAdaptiveDisplay();
+
+            // Analyze form (NEW!)
+            analyzeForm(shoulderAngle);
+
+            if (currentState === 'STANDING' && shoulderAngle > 50) {
+                currentState = 'RAISING';
+                updateFeedback('Keep raising!');
+            } else if (currentState === 'RAISING' && shoulderAngle > personalTarget) {
+                currentState = 'TARGET';
+                updateFeedback(`Perfect height! ${Math.round(shoulderAngle)}°`);
+            } else if (currentState === 'TARGET' && shoulderAngle < 30) {
+                currentState = 'STANDING';
+                
+                // Track rep data
+                const repData = {
+                    angle: Math.max(...sessionAngles.slice(-30)), // Max for shoulder (higher is better)
+                    timestamp: Date.now(),
+                    targetAngle: personalTarget
+                };
+                sessionReps.push(repData);
+                
+                // Award RP for the rep
+                const rpEarned = calculateRepRP(repData);
+                userRewards.sessionRP += rpEarned;
+                userRewards.totalRP += rpEarned;
+                
+                repCount++;
+                document.getElementById('repCount').textContent = repCount;
+                document.getElementById('sessionRP').textContent = userRewards.sessionRP;
+                document.getElementById('totalRP').textContent = userRewards.totalRP;
+                
+                updateFeedback(`Rep completed! +${rpEarned} RP`);
+                addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
+                
+                // RL ADJUSTMENT: Apply every 5 reps
+                if (repCount % 5 === 0) {
+                    sessionReps.forEach(rep => {
+                        const diff = Math.abs(rep.angle - rep.targetAngle);
+                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
+                    });
+                    
+                    applyRLAdjustment(repCount, sessionReps, personalTarget).then(newTarget => {
+                        if (newTarget !== personalTarget) {
+                            personalTarget = newTarget;
+                            document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
+                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
+                        }
+                    });
+                }
+            }
+        }
+
+        // Calculate angle between 3 points
+        function calculateAngle(a, b, c) {
+            const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+            let angle = Math.abs(radians * 180.0 / Math.PI);
+            if (angle > 180) angle = 360 - angle;
+            return angle;
+        }
+
+        // Update UI
+        function updateStatus(type, message) {
+            const status = document.getElementById('status');
+            status.className = 'status ' + type;
+            status.textContent = message;
+        }
+
+        function updateFeedback(message) {
+            document.getElementById('feedback').textContent = message;
+        }
+
+        // Update adaptive learning display
+        function updateAdaptiveDisplay() {
+            if (sessionAngles.length === 0) return;
+
+            const recentAngles = sessionAngles.slice(-50); // Last 50 angles
+            const bestAngle = Math.min(...recentAngles);
+            const avgAngle = recentAngles.reduce((a, b) => a + b, 0) / recentAngles.length;
+            
+            // Calculate consistency (lower standard deviation = better)
+            const variance = recentAngles.reduce((sum, angle) => sum + Math.pow(angle - avgAngle, 2), 0) / recentAngles.length;
+            const consistency = Math.max(0, 100 - Math.sqrt(variance));
+
+            document.getElementById('bestAngle').textContent = Math.round(bestAngle) + '°';
+            document.getElementById('avgAngle').textContent = Math.round(avgAngle) + '°';
+            document.getElementById('consistency').textContent = Math.round(consistency) + '%';
+
+            // Adjust personal target based on performance
+            if (sessionReps.length >= 5) {
+                const last5Reps = sessionReps.slice(-5);
+                const avg5 = last5Reps.reduce((sum, rep) => sum + rep.angle, 0) / 5;
+                
+                if (avg5 < personalTarget - 5) {
+                    // User consistently beating target, make it harder
+                    personalTarget = Math.max(60, personalTarget - 3);
+                    document.getElementById('personalTarget').textContent = personalTarget + '°';
+                    addAdaptiveLog(`📈 Target adjusted to ${personalTarget}° - You're improving!`);
+                }
+            }
+
+            // Update difficulty level
+            const gap = personalTarget - 60; // 60° is expert level
+            let difficulty = 'Expert';
+            if (gap > 20) difficulty = 'Beginner';
+            else if (gap > 10) difficulty = 'Intermediate';
+            else if (gap > 5) difficulty = 'Advanced';
+            
+            document.getElementById('difficultyLevel').textContent = difficulty;
+        }
+
+        // Add achievement to log
+        function addAchievementLog(message) {
+            const list = document.getElementById('achievementList');
+            
+            // Clear placeholder
+            if (list.children.length === 1 && list.children[0].textContent.includes('Complete a session')) {
+                list.innerHTML = '';
+            }
+            
+            const item = document.createElement('div');
+            item.className = 'achievement-item';
+            item.textContent = message;
+            item.style.animation = 'slideIn 0.3s ease';
+            list.insertBefore(item, list.firstChild);
+            
+            // Keep only last 5
+            while (list.children.length > 5) {
+                list.removeChild(list.lastChild);
+            }
+        }
+
+        // Add adaptive log
+        function addAdaptiveLog(message) {
+            const log = document.getElementById('adaptiveLog');
+            
+            // Clear placeholder
+            if (log.children.length === 1 && log.children[0].textContent.includes('Adaptive system')) {
+                log.innerHTML = '';
+            }
+            
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            entry.style.marginBottom = '5px';
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 5
+            while (log.children.length > 5) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Test Gamification System
+        async function testGamification() {
+            // Import reward system (dynamic import works in modules)
+            const { processSessionRewards } = await import('../utils/rewardSystem.js');
+            const { checkNewAchievements } = await import('../utils/achievementSystem.js');
+            const { getSessionCompleteMessage } = await import('../utils/motivationEngine.js');
+            
+            // Simulate a completed session with 20 good reps
+            const sessionData = {
+                reps: Array(20).fill({
+                    angles: { min: 88, max: 95, avg: 92 },
+                    success: true,
+                    targetAngle: 90,
+                    timestamp: Date.now()
+                }),
+                sessionStats: {
+                    consistencyScore: 0.85,
+                    completionRate: 1.0,
+                    avgAngle: 92
+                }
+            };
+
+            const currentRewards = {
+                totalRP: parseInt(document.getElementById('rpDisplay').textContent) || 0,
+                currentLevel: parseInt(document.getElementById('levelDisplay').textContent) || 1,
+                streakDays: 3
+            };
+
+            const recentActivity = {
+                lastSessionDate: new Date(Date.now() - 86400000), // Yesterday
+                sessionsThisWeek: 2
+            };
+
+            // Calculate rewards
+            const result = processSessionRewards(
+                "demo-user",
+                sessionData,
+                currentRewards,
+                recentActivity
+            );
+
+            // Update display
+            document.getElementById('totalRP').textContent = result.newTotalRP;
+            document.getElementById('currentLevel').textContent = result.levelInfo.level;
+            document.getElementById('levelName').textContent = result.levelInfo.name;
+            document.getElementById('levelProgress').style.width = result.levelInfo.progressPercentage + '%';
+            document.getElementById('streakDays').textContent = result.streakInfo.streakDays + ' 🔥';
+
+            // Update achievement list
+            const achievementList = document.getElementById('achievementList');
+            achievementList.innerHTML = '';
+            result.achievements.forEach(achievement => {
+                addAchievementLog(achievement);
+            });
+
+            // Show results in feedback
+            const userAge = 25; // Example age
+            const completionMessage = getSessionCompleteMessage(userAge, result.rpEarned);
+            
+            updateFeedback(`🎉 ${completionMessage}`);
+            addAdaptiveLog(`Session test complete: +${result.rpEarned} RP earned!`);
+            
+            // Also log to console for details
+            console.log('Full Reward Result:', result);
+        }
+
+        // Make functions globally available
+        window.startDetection = startDetection;
+        window.stopDetection = stopDetection;
+        window.changeExercise = changeExercise;
+        window.resetExercise = resetExercise;
+        window.testGamification = testGamification;
+    </script>
+</body>
+</html>

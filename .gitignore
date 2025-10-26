@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environment
+rl_env/
+venv/
+env/
+ENV/
+.venv
+
+# ML Models (too large for git - download separately)
+ml/models/dqn/*.zip
+ml/models/form_classifier/*.pkl
+ml/models/*/
+
+# Training Logs
+ml/logs/
+tensorboard_logs/
+*.log
+
+# Dataset (too large - download separately)
+Dataset/
+ml/data/raw/
+ml/data/processed/*.csv
+ml/data/processed/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# System files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Keep model directories but ignore contents (except .gitkeep)
+!ml/models/dqn/.gitkeep
+!ml/models/form_classifier/.gitkeep
+!ml/data/processed/.gitkeep

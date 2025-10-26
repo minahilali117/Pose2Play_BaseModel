@@ -1,0 +1,11 @@
+{
+  "mean_reward": 852.6,
+  "std_reward": 125.09492395776897,
+  "min_reward": 630.0,
+  "max_reward": 1160.0,
+  "termination_reasons": {
+    "session_complete": 100,
+    "fatigue_quit": 0,
+    "frustration_quit": 0
+  }
+}
