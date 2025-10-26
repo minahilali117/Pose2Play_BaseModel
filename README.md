@@ -75,9 +75,21 @@ python -m venv rl_env
 pip install -r requirements.txt
 ```
 
-**3. Download Dataset** (Required for training)
+**3. Pre-trained Models** ✅
 
-Place the `Dataset/` folder in the parent directory:
+Good news! **Pre-trained models are already included** in this repository:
+- `ml/models/dqn/DQN_rehab_final.zip` - RL agent (trained)
+- `ml/models/form_classifier/form_classifier_rf.pkl` - Form classifier (trained)
+
+**You can skip training and use the system immediately!**
+
+**4. Download Dataset** (Optional - only needed for retraining)
+
+If you want to retrain the models, download the PHYTMO dataset:
+
+**Dataset Source:** [PHYTMO Dataset on Zenodo](https://zenodo.org/records/6319979/files/PHYTMO.zip)
+
+After downloading, extract and place the `Dataset/` folder in the parent directory:
 ```
 ├── Dataset/
 │   ├── inertial/
@@ -127,10 +139,15 @@ python api_server.py
 
 ## 🧪 Training Models (Optional)
 
+**Note:** Pre-trained models are already included! This section is only needed if you want to:
+- Retrain with different hyperparameters
+- Experiment with new algorithms
+- Use your own dataset
+
 ### Prerequisites
 
 Make sure you've:
-1. Downloaded the Dataset
+1. Downloaded the [PHYTMO Dataset](https://zenodo.org/records/6319979/files/PHYTMO.zip)
 2. Activated virtual environment (`.\rl_env\Scripts\activate`)
 
 ### Step 1: Process Dataset
@@ -378,7 +395,9 @@ See LICENSE file for details.
 - **MediaPipe** - Pose detection library
 - **Stable-Baselines3** - RL training framework
 - **scikit-learn** - ML classification models
-- **Dataset** - Rehabilitation exercise recordings (29 subjects)
+- **PHYTMO Dataset** - Rehabilitation exercise recordings (29 subjects)
+  - Source: [Zenodo - PHYTMO Dataset](https://zenodo.org/records/6319979)
+  - Citation: Physical Therapy Motion Dataset for rehabilitation research
 
 ## 📧 Contact
 
