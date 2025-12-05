@@ -470,6 +470,12 @@
         let sessionReps = [];
         let personalTarget = 90;
         let sessionStartTime = null;
+        
+        // LSTM Integration
+        let userId = 'user_' + Date.now();
+        let currentRepAngleSequence = [];
+        let lstmEnabled = false;
+        let lastLSTMCheck = 0;
 
         // Gamification tracking
         let userRewards = {
@@ -484,7 +490,7 @@
         // Get RL action for difficulty adjustment
         async function getRLAction(userState) {
             try {
-                const response = await fetch('http://localhost:5000/predict', {
+                const response = await fetch('/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ state: userState })
@@ -582,22 +588,26 @@
             switch(action) {
                 case 0: // Decrease difficulty (easier)
                     newTarget = currentTarget + 5;
-                    actionMessage = '📉 RL: Making it easier (+5°)';
+                    actionMessage = '📉 RL Agent: Reducing challenge (+5°)';
                     addAdaptiveLog(actionMessage);
+                    updateFeedback('RL: Making it easier');
                     break;
                 case 1: // Maintain
                     newTarget = currentTarget;
-                    actionMessage = '➡️ RL: Maintaining difficulty';
+                    actionMessage = '➡️ RL Agent: Maintaining current level';
+                    addAdaptiveLog(actionMessage);
                     console.log(actionMessage);
                     break;
                 case 2: // Increase difficulty (harder)
                     newTarget = currentTarget - 5;
-                    actionMessage = '📈 RL: Increasing challenge (-5°)';
+                    actionMessage = '📈 RL Agent: Increasing difficulty (-5°)';
                     addAdaptiveLog(actionMessage);
+                    updateFeedback('RL: Challenge increased!');
                     break;
                 case 3: // Rest break
-                    actionMessage = '⏸️ RL: Take a 30-second rest!';
+                    actionMessage = '⏸️ RL Agent: Rest recommended (30s)';
                     addAdaptiveLog(actionMessage);
+                    updateFeedback('Take a 30-second rest!');
                     showRestBreakNotification();
                     break;
                 case 4: // Encouragement
@@ -908,7 +918,7 @@
                     : 3.0;
 
                 // Call simplified form API
-                const response = await fetch('http://localhost:5000/predict_form_simple', {
+                const response = await fetch('/predict_form_simple', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1097,19 +1107,29 @@
             }
         }
 
-        // Shoulder exercise checker
-        // Shoulder exercise checker
+        // Shoulder exercise checker with LSTM integration
         function checkShoulderExercise(shoulderAngle) {
             // Track angles for adaptive learning
             sessionAngles.push(shoulderAngle);
             updateAdaptiveDisplay();
 
-            // Analyze form (NEW!)
+            // Analyze form (rule-based)
             analyzeForm(shoulderAngle);
+            
+            // LSTM: Capture angle sequence during movement
+            // For now, we track just the shoulder angle (can be extended to 18 features)
+            // The LSTM expects [T, 18] where T is number of frames
+            // We'll create a simplified 18-feature vector per frame
+            if (currentState !== 'STANDING') {
+                // Create 18-feature vector (shoulder angle repeated, real implementation would use all joint angles)
+                const angleFeatures = new Array(18).fill(shoulderAngle);
+                currentRepAngleSequence.push(angleFeatures);
+            }
 
             if (currentState === 'STANDING' && shoulderAngle > 50) {
                 currentState = 'RAISING';
                 updateFeedback('Keep raising!');
+                currentRepAngleSequence = []; // Start new sequence
             } else if (currentState === 'RAISING' && shoulderAngle > personalTarget) {
                 currentState = 'TARGET';
                 updateFeedback(`Perfect height! ${Math.round(shoulderAngle)}°`);
@@ -1118,7 +1138,7 @@
                 
                 // Track rep data
                 const repData = {
-                    angle: Math.max(...sessionAngles.slice(-30)), // Max for shoulder (higher is better)
+                    angle: Math.max(...sessionAngles.slice(-30)),
                     timestamp: Date.now(),
                     targetAngle: personalTarget
                 };
@@ -1137,6 +1157,11 @@
                 updateFeedback(`Rep completed! +${rpEarned} RP`);
                 addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
                 
+                // LSTM QUALITY PREDICTION: Call after each rep
+                if (lstmEnabled && currentRepAngleSequence.length > 10) {
+                    predictLSTMQuality(userId, currentRepAngleSequence, repData);
+                }
+                
                 // RL ADJUSTMENT: Apply every 5 reps
                 if (repCount % 5 === 0) {
                     sessionReps.forEach(rep => {
@@ -1148,13 +1173,182 @@
                         if (newTarget !== personalTarget) {
                             personalTarget = newTarget;
                             document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
-                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
+                            console.log(`🎯 RL: Target adjusted to ${Math.round(personalTarget)}°`);
+                            addAdaptiveLog(`🎯 RL adjusted target to ${Math.round(personalTarget)}°`);
                         }
                     });
                 }
+                
+                // Reset sequence for next rep
+                currentRepAngleSequence = [];
             }
         }
 
+        // LSTM Quality Prediction
+        async function predictLSTMQuality(userId, angleSequence, repData) {
+            try {
+                const response = await fetch('/predict_quality', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        angles: angleSequence
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('LSTM API error:', response.status);
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                // Log results
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('🤖 LSTM Quality Analysis');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log(`Quality Score: ${(result.quality_score * 100).toFixed(1)}%`);
+                console.log(`Rep ROM: ${result.rep_rom.toFixed(1)}°`);
+                console.log(`Target ROM: ${result.personalized_target_angle.toFixed(1)}°`);
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                // Update personalized target from LSTM
+                if (result.personalized_target_angle && Math.abs(result.personalized_target_angle - personalTarget) > 2) {
+                    personalTarget = Math.round(result.personalized_target_angle);
+                    document.getElementById('targetAngle').textContent = personalTarget + '°';
+                    
+                    const qualityPercent = (result.quality_score * 100).toFixed(0);
+                    addAdaptiveLog(`🤖 LSTM: Quality ${qualityPercent}% → Target ${personalTarget}°`);
+                }
+                
+                // Show quality feedback
+                const qualityPercent = (result.quality_score * 100).toFixed(0);
+                let qualityEmoji = '🌟';
+                if (result.quality_score < 0.7) qualityEmoji = '⚠️';
+                else if (result.quality_score < 0.85) qualityEmoji = '👍';
+                
+                updateFeedback(`${qualityEmoji} Movement Quality: ${qualityPercent}%`);
+                
+                // Store LSTM data with rep
+                repData.lstm_quality = result.quality_score;
+                repData.lstm_rom = result.rep_rom;
+                repData.lstm_target = result.personalized_target_angle;
+                
+            } catch (error) {
+                console.error('LSTM prediction failed:', error);
+            }
+        }
+        
+        // LSTM Quality Prediction
+        async function predictLSTMQuality(userId, angleSequence, repData) {
+            try {
+                const response = await fetch('/predict_quality', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        angles: angleSequence
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('LSTM API error:', response.status);
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                // Log results
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('🤖 LSTM Quality Analysis');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log(`Quality Score: ${(result.quality_score * 100).toFixed(1)}%`);
+                console.log(`Rep ROM: ${result.rep_rom.toFixed(1)}°`);
+                console.log(`Target ROM: ${result.personalized_target_angle.toFixed(1)}°`);
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                // Update personalized target from LSTM
+                if (result.personalized_target_angle && Math.abs(result.personalized_target_angle - personalTarget) > 2) {
+                    personalTarget = Math.round(result.personalized_target_angle);
+                    document.getElementById('targetAngle').textContent = personalTarget + '°';
+                    
+                    const qualityPercent = (result.quality_score * 100).toFixed(0);
+                    addAdaptiveLog(`🤖 LSTM: Quality ${qualityPercent}% → Target ${personalTarget}°`);
+                }
+                
+                // Show quality feedback
+                const qualityPercent = (result.quality_score * 100).toFixed(0);
+                let qualityEmoji = '🌟';
+                if (result.quality_score < 0.7) qualityEmoji = '⚠️';
+                else if (result.quality_score < 0.85) qualityEmoji = '👍';
+                
+                updateFeedback(`${qualityEmoji} Movement Quality: ${qualityPercent}%`);
+                
+                // Store LSTM data with rep
+                repData.lstm_quality = result.quality_score;
+                repData.lstm_rom = result.rep_rom;
+                repData.lstm_target = result.personalized_target_angle;
+                
+            } catch (error) {
+                console.error('LSTM prediction failed:', error);
+            }
+        }
+        
+        // LSTM Quality Prediction
+        async function predictLSTMQuality(userId, angleSequence, repData) {
+            try {
+                const response = await fetch('/predict_quality', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        angles: angleSequence
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('LSTM API error:', response.status);
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                // Log results
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('🤖 LSTM Quality Analysis');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log(`Quality Score: ${(result.quality_score * 100).toFixed(1)}%`);
+                console.log(`Rep ROM: ${result.rep_rom.toFixed(1)}°`);
+                console.log(`Target ROM: ${result.personalized_target_angle.toFixed(1)}°`);
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                // Update personalized target from LSTM
+                if (result.personalized_target_angle && Math.abs(result.personalized_target_angle - personalTarget) > 2) {
+                    personalTarget = Math.round(result.personalized_target_angle);
+                    document.getElementById('targetAngle').textContent = personalTarget + '°';
+                    
+                    const qualityPercent = (result.quality_score * 100).toFixed(0);
+                    addAdaptiveLog(`🤖 LSTM: Quality ${qualityPercent}% → Target ${personalTarget}°`);
+                }
+                
+                // Show quality feedback
+                const qualityPercent = (result.quality_score * 100).toFixed(0);
+                let qualityEmoji = '🌟';
+                if (result.quality_score < 0.7) qualityEmoji = '⚠️';
+                else if (result.quality_score < 0.85) qualityEmoji = '👍';
+                
+                updateFeedback(`${qualityEmoji} Movement Quality: ${qualityPercent}%`);
+                
+                // Store LSTM data with rep
+                repData.lstm_quality = result.quality_score;
+                repData.lstm_rom = result.rep_rom;
+                repData.lstm_target = result.personalized_target_angle;
+                
+            } catch (error) {
+                console.error('LSTM prediction failed:', error);
+            }
+        }
+        
         // Calculate angle between 3 points
         function calculateAngle(a, b, c) {
             const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
@@ -1329,3 +1523,4 @@
     </script>
 </body>
 </html>
+

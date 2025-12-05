@@ -17,6 +17,12 @@ import {
 import { 
     processSessionRewards 
 } from '../utils/rewardSystem.js';
+import { 
+    predictQuality, 
+    checkLSTMAvailability,
+    getQualityFeedback,
+    logPrediction 
+} from '../utils/lstmClient.js';
 
 /**
  * Shoulder Exercise Configuration
@@ -104,6 +110,21 @@ let repStartTime = null;
 let repMinAngle = 0;
 let repMaxAngle = 0;
 
+// LSTM integration: Track angle sequence for current rep
+let currentRepAngleSequence = [];
+let lstmEnabled = false;
+let personalizedTargetAngle = 90; // Updated by LSTM personalizer
+
+// Check LSTM availability on module load
+checkLSTMAvailability().then(available => {
+    lstmEnabled = available;
+    if (lstmEnabled) {
+        console.log('✅ LSTM movement quality model available');
+    } else {
+        console.log('⚠️ LSTM model not available - using rule-based feedback only');
+    }
+});
+
 /**
  * Check shoulder exercise form (with adaptive learning)
  * 
@@ -183,6 +204,11 @@ export const checkShoulderExercise = (
     if (currentState !== "DOWN") {
         repMinAngle = Math.min(repMinAngle === 0 ? shoulderAngle : repMinAngle, shoulderAngle);
         repMaxAngle = Math.max(repMaxAngle, shoulderAngle);
+        
+        // LSTM: Capture angle sequence during rep
+        // Store multiple angles that could be used for quality assessment
+        // For now, storing just shoulder angle (can be extended to include more joints)
+        currentRepAngleSequence.push([shoulderAngle]);
     }
 
     // Determine transition
@@ -218,6 +244,35 @@ export const checkShoulderExercise = (
             repCount++;
             setRepCount(repCount);
             
+            // LSTM: Predict movement quality for completed rep
+            if (lstmEnabled && userId && currentRepAngleSequence.length > 5) {
+                // Call LSTM API asynchronously (don't block UI)
+                predictQuality(userId, currentRepAngleSequence)
+                    .then(result => {
+                        // Log prediction to console
+                        logPrediction(result);
+                        
+                        // Update personalized target for next rep
+                        personalizedTargetAngle = result.personalized_target_angle;
+                        shoulderExerciseConfig.targets.targetShoulderAngle = personalizedTargetAngle;
+                        
+                        // Provide quality-based feedback
+                        const qualityFeedback = getQualityFeedback(result.quality_score);
+                        onFeedbackUpdate(qualityFeedback);
+                        
+                        // Store LSTM results with rep data
+                        if (sessionReps.length > 0) {
+                            const lastRep = sessionReps[sessionReps.length - 1];
+                            lastRep.lstm_quality_score = result.quality_score;
+                            lastRep.lstm_rep_rom = result.rep_rom;
+                            lastRep.lstm_target = result.personalized_target_angle;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('LSTM prediction failed:', error);
+                    });
+            }
+            
             // Record this rep's performance
             if (userId) {
                 const repData = {
@@ -230,6 +285,7 @@ export const checkShoulderExercise = (
                     duration: repStartTime ? Date.now() - repStartTime : 0,
                     success: repMaxAngle >= adaptiveTarget,
                     targetAngle: adaptiveTarget,
+                    personalizedTarget: personalizedTargetAngle,
                     metadata: {
                         side,
                         shoulderAngle: Math.round(shoulderAngle)
@@ -244,6 +300,7 @@ export const checkShoulderExercise = (
             repMinAngle = 0;
             repMaxAngle = 0;
             repStartTime = null;
+            currentRepAngleSequence = []; // Reset angle sequence for next rep
         }
         
         // Start rep timer
@@ -266,6 +323,8 @@ export const resetShoulderExercise = () => {
     repStartTime = null;
     repMinAngle = 0;
     repMaxAngle = 0;
+    currentRepAngleSequence = [];
+    personalizedTargetAngle = 90;
 };
 
 /**
