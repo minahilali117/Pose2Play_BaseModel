@@ -20,9 +20,9 @@ ENV/
 .venv
 
 # ML Models (too large for git - download separately)
-ml/models/dqn/*.zip
-ml/models/form_classifier/*.pkl
-ml/models/*/
+# ml/models/dqn/*.zip
+# ml/models/form_classifier/*.pkl
+# ml/models/*/
 
 # Training Logs
 ml/logs/

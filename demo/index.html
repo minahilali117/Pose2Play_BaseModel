@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -30,20 +30,40 @@
         h1 {
             color: #667eea;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            font-size: 32px;
         }
 
         .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 640px;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .video-container {
             position: relative;
             width: 100%;
-            max-width: 640px;
-            margin: 0 auto 20px;
+            margin: 0;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -113,42 +133,201 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-            margin-top: 20px;
         }
 
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px 20px;
+            border-radius: 12px;
             text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card.highlight {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
         }
 
         .stat-label {
             font-size: 14px;
             opacity: 0.9;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .stat-value {
-            font-size: 32px;
+            font-size: 48px;
             font-weight: bold;
+            line-height: 1;
         }
 
         .feedback-box {
-            background: #f7fafc;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 12px;
             margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
         }
 
         .feedback-text {
-            font-size: 18px;
+            color: #2d3436;
+            font-size: 20px;
             font-weight: 600;
-            color: #2d3748;
+            text-align: center;
+        }
+
+        .form-analysis-panel {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-analysis-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+        }
+
+        .form-metric-label {
+            font-weight: 600;
+            color: #2d3436;
+        }
+
+        .form-metric-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .form-metric-value.good {
+            color: #48bb78;
+        }
+
+        .form-metric-value.warning {
+            color: #ed8936;
+        }
+
+        .form-metric-value.error {
+            color: #f56565;
+        }
+
+        /* Gamification Panel */
+        .gamification-panel {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+            display: none;
+        }
+
+        .gamification-panel.active {
+            display: block;
+        }
+
+        .gamification-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .reward-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .reward-item {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .reward-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .reward-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .achievement-list {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .achievement-item {
+            background: rgba(255,255,255,0.25);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-progress-container {
+            margin-top: 15px;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 6px;
         }
 
         .status {
@@ -232,6 +411,119 @@
             font-size: 14px;
         }
 
+        /* ML Analysis Dashboard */
+        .ml-dashboard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            display: none;
+        }
+
+        .ml-dashboard.active {
+            display: block;
+        }
+
+        .ml-dashboard-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .ml-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ml-section {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ml-section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ml-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .ml-metric:last-child {
+            border-bottom: none;
+        }
+
+        .ml-metric-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .ml-metric-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .ml-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .ml-status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .ml-adjustment-log {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .ml-log-entry {
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .panel-toggle-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .panel-toggle-buttons button {
+            flex: 1;
+        }
+
         /* Adaptive Learning Panel */
         .adaptive-panel {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
@@ -305,11 +597,6 @@
 
         <div id="status" class="status loading">Initializing camera...</div>
 
-        <div class="video-container">
-            <video id="webcam" autoplay playsinline></video>
-            <canvas id="canvas" width="640" height="480"></canvas>
-        </div>
-
         <div class="controls">
             <button id="startBtn" class="primary" onclick="startDetection()">Start Detection</button>
             <button id="stopBtn" class="primary" onclick="stopDetection()" disabled>Stop Detection</button>
@@ -319,135 +606,169 @@
                 <option value="shoulder">Shoulder Raise</option>
             </select>
             <button class="secondary" onclick="resetExercise()">Reset Count</button>
-            <button class="secondary" onclick="testGamification()" style="background: #10b981;">🎮 Test Gamification</button>
         </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-label">Reps Completed</div>
-                <div class="stat-value" id="repCount">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Current Angle</div>
-                <div class="stat-value" id="currentAngle">--</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Target Angle</div>
-                <div class="stat-value" id="targetAngle">90°</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Recovery Points (RP)</div>
-                <div class="stat-value" id="rpDisplay">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Level</div>
-                <div class="stat-value" id="levelDisplay">1</div>
-            </div>
+        <div class="panel-toggle-buttons">
+            <button class="secondary" onclick="toggleGamification()" style="background: #f5576c;">🎮 Gamification</button>
+            <button class="secondary" onclick="toggleMLDashboard()" style="background: #667eea;">🤖 ML Analysis</button>
         </div>
 
-        <div class="feedback-box">
-            <div class="feedback-text" id="feedback">Select an exercise and click Start Detection</div>
-        </div>
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="canvas" width="640" height="480"></canvas>
+                </div>
+            </div>
 
-        <!-- Gamification Panel -->
-        <div class="gamification-panel">
-            <div class="gamification-header">🎮 Gamification & Rewards</div>
-            <div class="reward-stats">
-                <div class="reward-item">
-                    <div class="reward-label">Total RP</div>
-                    <div class="reward-value" id="totalRP">0</div>
+            <div class="right-panel">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Reps Completed</div>
+                        <div class="stat-value" id="repCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Current Angle</div>
+                        <div class="stat-value" id="currentAngle">--</div>
+                    </div>
+                    <div class="stat-card highlight">
+                        <div class="stat-label">🎯 Your Target</div>
+                        <div class="stat-value" id="targetAngle">--</div>
+                    </div>
                 </div>
-                <div class="reward-item">
-                    <div class="reward-label">Level</div>
-                    <div class="reward-value" id="currentLevel">1</div>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-label">Streak</div>
-                    <div class="reward-value" id="streakDays">0 🔥</div>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-label">Session RP</div>
-                    <div class="reward-value" id="sessionRP">0</div>
-                </div>
-            </div>
-            <div style="text-align: center; margin-bottom: 10px;">
-                <strong>Level Progress:</strong> <span id="levelName">Building Foundation</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="levelProgress" style="width: 0%"></div>
-            </div>
-            <div style="margin-top: 15px;">
-                <strong> Recent Achievements:</strong>
-                <div class="achievement-list" id="achievementList">
-                    <div style="text-align: center; opacity: 0.7;">Complete a session to unlock achievements!</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Adaptive Learning Panel -->
-        <div class="adaptive-panel">
-            <div class="adaptive-header"> Adaptive Learning System</div>
-            <div class="adaptive-stats">
-                <div class="adaptive-item">
-                    <div class="adaptive-label">Standard Target</div>
-                    <div class="adaptive-value" id="standardTarget">90°</div>
+                <div class="feedback-box">
+                    <div class="feedback-text" id="feedback">Select an exercise and click Start Detection</div>
                 </div>
-                <div class="adaptive-item">
-                    <div class="adaptive-label">Your Target</div>
-                    <div class="adaptive-value" id="personalTarget">90°</div>
-                </div>
-                <div class="adaptive-item">
-                    <div class="adaptive-label">Best Angle</div>
-                    <div class="adaptive-value" id="bestAngle">--</div>
-                </div>
-                <div class="adaptive-item">
-                    <div class="adaptive-label">Avg Angle</div>
-                    <div class="adaptive-value" id="avgAngle">--</div>
-                </div>
-                <div class="adaptive-item">
-                    <div class="adaptive-label">Consistency</div>
-                    <div class="adaptive-value" id="consistency">--</div>
-                </div>
-                <div class="adaptive-item">
-                    <div class="adaptive-label">Difficulty</div>
-                    <div class="adaptive-value" id="difficultyLevel">Beginner</div>
-                </div>
-            </div>
-            <div class="session-log" id="adaptiveLog">
-                <div style="text-align: center; opacity: 0.7;">Adaptive system will track your progress...</div>
-            </div>
-        </div>
 
-        <!-- Form Quality Panel (NEW!) -->
-        <div class="form-quality-panel" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px;">
-            <div style="font-size: 18px; font-weight: 600; color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-                Form Quality Analysis
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Form Quality</div>
-                    <div id="formQuality" style="font-size: 32px; font-weight: 700; color: #10b981;">--</div>
+                <div class="form-analysis-panel">
+                    <div class="form-analysis-title">
+                        <span>📊</span>
+                        <span>Form Analysis</span>
+                    </div>
+                    <div class="form-metric">
+                        <span class="form-metric-label">Quality Score:</span>
+                        <span class="form-metric-value" id="formQuality">--</span>
+                    </div>
+                    <div class="form-metric">
+                        <span class="form-metric-label">Range of Motion:</span>
+                        <span class="form-metric-value" id="formROM">--</span>
+                    </div>
+                    <div class="form-metric">
+                        <span class="form-metric-label">Consistency:</span>
+                        <span class="form-metric-value" id="formConsistency">--</span>
+                    </div>
+                    <div class="form-metric">
+                        <span class="form-metric-label">Status:</span>
+                        <span class="form-metric-value" id="formStatus">⏸️ Waiting</span>
+                    </div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 12px; color: #64748b; margin-bottom: 5px;">Status</div>
-                    <div id="formStatus" style="font-size: 16px; font-weight: 600; color: #10b981;">Ready</div>
+
+                <div class="gamification-panel" id="gamificationPanel">
+                    <div class="gamification-header">🎮 Gamification System</div>
+                    
+                    <div class="reward-stats">
+                        <div class="reward-item">
+                            <div class="reward-label">Total RP</div>
+                            <div class="reward-value" id="totalRP">0</div>
+                        </div>
+                        <div class="reward-item">
+                            <div class="reward-label">Session RP</div>
+                            <div class="reward-value" id="sessionRP">0</div>
+                        </div>
+                        <div class="reward-item">
+                            <div class="reward-label">Current Level</div>
+                            <div class="reward-value" id="currentLevel">1</div>
+                        </div>
+                        <div class="reward-item">
+                            <div class="reward-label">Streak Days</div>
+                            <div class="reward-value" id="streakDays">0 🔥</div>
+                        </div>
+                    </div>
+
+                    <div class="level-progress-container">
+                        <div class="level-info">
+                            <span>Level Progress</span>
+                            <span id="levelName">Beginner</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="levelProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="achievement-list" id="achievementList">
+                        <div class="achievement-item">🏆 Complete a session to earn achievements!</div>
+                    </div>
                 </div>
-            </div>
-            <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
-                <div style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px;">💡 Real-Time Feedback:</div>
-                <div id="formFeedback" style="font-size: 13px; color: #475569;">
-                    Start exercising to get form feedback...
-                </div>
-            </div>
-            <div style="background: #fef3c7; padding: 12px; border-radius: 8px; display: none;" id="formCorrectionPanel">
-                <div style="font-size: 14px; font-weight: 600; color: #92400e; margin-bottom: 8px;">⚠️ Corrections Needed:</div>
-                <div id="formCorrections" style="font-size: 13px; color: #78350f;">
-                </div>
-            </div>
-            <div style="background: #dbeafe; padding: 12px; border-radius: 8px; margin-top: 10px;" id="formTipsPanel">
-                <div style="font-size: 14px; font-weight: 600; color: #1e40af; margin-bottom: 8px;">💡 Tips to Improve Form:</div>
-                <div id="formTips" style="font-size: 13px; color: #1e3a8a; line-height: 1.6;">
-                    Select an exercise and start moving to get personalized tips...
+
+                <div class="ml-dashboard" id="mlDashboard">
+                    <div class="ml-dashboard-header">🤖 ML Analysis Dashboard</div>
+                    
+                    <div class="ml-sections">
+                        <div class="ml-section">
+                            <div class="ml-section-title">
+                                <span>🧠</span>
+                                <span>LSTM (Micro)</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Quality Score:</span>
+                                <span class="ml-metric-value" id="lstmQuality">--</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">ROM Detected:</span>
+                                <span class="ml-metric-value" id="lstmROM">--</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Target Suggested:</span>
+                                <span class="ml-metric-value" id="lstmTarget">--</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Adjustments:</span>
+                                <span class="ml-metric-value" id="lstmAdjustments">0</span>
+                            </div>
+                            <div class="ml-status">
+                                <div class="ml-status-indicator" id="lstmIndicator"></div>
+                                <span id="lstmStatus">Waiting for reps...</span>
+                            </div>
+                        </div>
+
+                        <div class="ml-section">
+                            <div class="ml-section-title">
+                                <span>🎯</span>
+                                <span>RL (Macro)</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Consistency:</span>
+                                <span class="ml-metric-value" id="rlConsistency">--</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Fatigue Level:</span>
+                                <span class="ml-metric-value" id="rlFatigue">--</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Success Rate:</span>
+                                <span class="ml-metric-value" id="rlSuccessRate">--</span>
+                            </div>
+                            <div class="ml-metric">
+                                <span class="ml-metric-label">Last Action:</span>
+                                <span class="ml-metric-value" id="rlLastAction">--</span>
+                            </div>
+                            <div class="ml-status">
+                                <div class="ml-status-indicator" id="rlIndicator"></div>
+                                <span id="rlStatus">Waiting for 5 reps...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ml-section">
+                        <div class="ml-section-title">
+                            <span>📝</span>
+                            <span>Adjustment Log</span>
+                        </div>
+                        <div class="ml-adjustment-log" id="mlAdjustmentLog">
+                            <div class="ml-log-entry">🤖 System ready. Start exercising to see ML analysis.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -455,20 +776,21 @@
 
     <script type="module">
         import { FilesetResolver, PoseLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21';
+        import { ExerciseManager } from './js/exerciseLogic.js';
+        import { MLIntegration } from './js/mlIntegration.js';
+        import { UIManager } from './js/uiManager.js';
+        import { calculateAngle, drawLandmarks } from './js/poseUtils.js';
+
+        // Initialize modules
+        const exerciseManager = new ExerciseManager();
+        const mlIntegration = new MLIntegration();
+        const uiManager = new UIManager();
 
         let poseLandmarker;
         let webcam;
         let canvas;
         let ctx;
         let animationId;
-        let currentExercise = 'squat';
-        let repCount = 0;
-        let currentState = 'STANDING';
-
-        // Adaptive learning tracking
-        let sessionAngles = [];
-        let sessionReps = [];
-        let personalTarget = 90;
         let sessionStartTime = null;
 
         // Gamification tracking
@@ -478,147 +800,149 @@
             streakDays: 0,
             sessionRP: 0
         };
-
-        // ========== RL INTEGRATION ==========
         
-        // Get RL action for difficulty adjustment
-        async function getRLAction(userState) {
-            try {
-                const response = await fetch('http://localhost:5000/predict', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: userState })
-                });
+        let currentExercise = 'squat';
+        
+        // Main detection loop
+        function detectPose() {
+            if (webcam.readyState >= 2) {
+                const result = poseLandmarker.detectForVideo(webcam, performance.now());
                 
-                if (!response.ok) throw new Error('API error');
-                const data = await response.json();
-                console.log('RL API Response:', data);
-                return data.action; // 0-4
-            } catch (error) {
-                console.warn('RL API unavailable, using rule-based system:', error.message);
-                return null;
-            }
-        }
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
 
-        // Calculate consistency from session history
-        function getConsistency(history) {
-            if (history.length < 2) return 0.5;
-            const angles = history.map(r => r.angle || 0);
-            const mean = angles.reduce((a, b) => a + b, 0) / angles.length;
-            const variance = angles.reduce((sum, angle) => sum + Math.pow(angle - mean, 2), 0) / angles.length;
-            const stdDev = Math.sqrt(variance);
-            return Math.max(0, 1 - (stdDev / mean));
-        }
-
-        // Calculate fatigue level from session history
-        function getFatigue(history) {
-            if (history.length < 5) return 0;
-            const recent5 = history.slice(-5).map(r => r.angle || 0);
-            const earlier5 = history.slice(0, 5).map(r => r.angle || 0);
-            const recentAvg = recent5.reduce((a, b) => a + b, 0) / recent5.length;
-            const earlierAvg = earlier5.reduce((a, b) => a + b, 0) / earlier5.length;
-            const deterioration = (earlierAvg - recentAvg) / earlierAvg;
-            return Math.max(0, Math.min(1, deterioration));
-        }
-
-        // Calculate success rate from session history
-        function getSuccessRate(history) {
-            if (history.length === 0) return 0.5;
-            const successful = history.filter(r => r.quality === 'good' || r.quality === 'perfect').length;
-            return successful / history.length;
-        }
-
-        // Apply RL action every 5 reps
-        async function applyRLAdjustment(repCount, userHistory, currentTarget) {
-            if (repCount % 5 !== 0) return currentTarget;
-            
-            // Pad userHistory to have at least 10 entries
-            const paddedHistory = [...userHistory];
-            while (paddedHistory.length < 10) {
-                paddedHistory.unshift({ angle: currentTarget, quality: 'neutral' });
+                if (result.landmarks && result.landmarks.length > 0) {
+                    const landmarks = result.landmarks[0];
+                    
+                    // Draw skeleton
+                    drawLandmarks(canvas, landmarks);
+                    
+                    // Process exercise
+                    processExercise(landmarks);
+                }
             }
             
-            // Build state from user history (20 dimensions)
-            const last10Angles = paddedHistory.slice(-10).map(r => r.angle || currentTarget);
-            const consistency = getConsistency(paddedHistory);
-            const fatigue = getFatigue(paddedHistory);
-            const sessionTimeNorm = sessionStartTime ? Math.min((Date.now() - sessionStartTime) / 60000, 1) : 0; // 0-1 (max 1 minute)
-            const baseline = paddedHistory[0]?.angle || currentTarget;
-            const repsNorm = Math.min(repCount, 99) / 100;
-            const successRate = getSuccessRate(paddedHistory);
+            animationId = requestAnimationFrame(detectPose);
+        }
+
+        // Process exercise logic
+        function processExercise(landmarks) {
+            let angle = 0;
+            let result;
             
-            const state = [
-                ...last10Angles,        // 10 dimensions: last 10 angles
-                consistency,             // 1 dimension: consistency score
-                fatigue,                 // 1 dimension: fatigue level
-                sessionTimeNorm,         // 1 dimension: session time (0-1)
-                currentTarget,           // 1 dimension: current target angle
-                baseline,                // 1 dimension: baseline angle
-                repsNorm,                // 1 dimension: reps completed (0-1)
-                successRate,             // 1 dimension: success rate
-                0,                       // 1 dimension: padding
-                0,                       // 1 dimension: padding
-                0                        // 1 dimension: padding
-            ];
-            
-            console.log(' RL State:', {
-                repCount,
-                last10Angles: last10Angles.slice(0, 3) + '...',
-                consistency: consistency.toFixed(2),
-                fatigue: fatigue.toFixed(2),
-                currentTarget,
-                successRate: successRate.toFixed(2)
-            });
-            
-            // Get RL action
-            const action = await getRLAction(state.slice(0, 20));  // 20-dim state
-            
-            if (action === null) return currentTarget; // Fallback to rule-based
-            
-            // Apply action
-            let newTarget = currentTarget;
-            let actionMessage = '';
-            
-            switch(action) {
-                case 0: // Decrease difficulty (easier)
-                    newTarget = currentTarget + 5;
-                    actionMessage = ' RL: Making it easier (+5°)';
-                    addAdaptiveLog(actionMessage);
-                    break;
-                case 1: // Maintain
-                    newTarget = currentTarget;
-                    actionMessage = ' RL: Maintaining difficulty';
-                    console.log(actionMessage);
-                    break;
-                case 2: // Increase difficulty (harder)
-                    newTarget = currentTarget - 5;
-                    actionMessage = ' RL: Increasing challenge (-5°)';
-                    addAdaptiveLog(actionMessage);
-                    break;
-                case 3: // Rest break
-                    actionMessage = '⏸ RL: Take a 30-second rest!';
-                    addAdaptiveLog(actionMessage);
-                    showRestBreakNotification();
-                    break;
-                case 4: // Encouragement
-                    actionMessage = ' RL: You\'re doing great! Keep it up!';
-                    addAchievementLog(actionMessage);
-                    break;
+            if (currentExercise === 'squat') {
+                angle = calculateAngle(landmarks[23], landmarks[25], landmarks[27]);
+                result = exerciseManager.checkSquat(angle);
+            } else if (currentExercise === 'hip') {
+                angle = calculateAngle(landmarks[11], landmarks[23], landmarks[25]);
+                result = exerciseManager.checkHipExercise(angle);
+            } else if (currentExercise === 'shoulder') {
+                angle = calculateAngle(landmarks[23], landmarks[11], landmarks[13]);
+                result = exerciseManager.checkShoulderExercise(angle);
             }
             
-            console.log(' RL Action:', action, actionMessage);
-            return newTarget;
+            // Update current angle display
+            uiManager.updateCurrentAngle(angle);
+            
+            // Handle baseline establishment
+            if (result && result.baseline) {
+                const baselineResult = exerciseManager.establishBaseline();
+                if (baselineResult.established) {
+                    uiManager.updateTargetAngle(baselineResult.personalTarget);
+                    uiManager.updateFeedback(`✅ Baseline: ${Math.round(baselineResult.baseline)}° | Target: ${Math.round(baselineResult.personalTarget)}°`);
+                } else {
+                    const exerciseAction = currentExercise === 'shoulder' ? 'Raise your arm as high as you can!' : 
+                                          currentExercise === 'squat' ? 'Squat as deep as you can!' :
+                                          'Lift your leg as high as you can!';
+                    uiManager.updateFeedback(`Baseline ${baselineResult.count}/${baselineResult.required}: ${exerciseAction} 💪`);
+                }
+                return;
+            }
+            
+            // Handle feedback messages
+            if (result && result.feedback) {
+                uiManager.updateFeedback(result.feedback);
+                return;
+            }
+            
+            // Handle rep completion
+            if (result && result.repCompleted) {
+                const repCount = exerciseManager.getRepCount();
+                uiManager.updateRepCount(repCount);
+                uiManager.updateFeedback(result.feedbackMsg);
+                
+                // LSTM micro-adjustment (per rep)
+                if (result.angleSequence && result.angleSequence.length > 10) {
+                    mlIntegration.predictLSTMQuality(result.angleSequence, result.repData)
+                        .then(lstmResult => {
+                            if (lstmResult) {
+                                // Update ML dashboard with LSTM data
+                                updateMLDashboard({
+                                    quality: lstmResult.quality_score,
+                                    rom: lstmResult.rep_rom,
+                                    suggestedTarget: lstmResult.personalized_target_angle,
+                                    adjustmentCount: mlIntegration.lstmAdjustmentCount || 0,
+                                    status: lstmResult.newTarget ? 'Target adjusted' : 'Quality analyzed'
+                                }, null);
+                                
+                                if (lstmResult.newTarget) {
+                                    const oldTarget = result.repData.targetAngle;
+                                    exerciseManager.setPersonalTarget(lstmResult.newTarget);
+                                    uiManager.updateTargetAngle(lstmResult.newTarget);
+                                    addMLLogEntry(`LSTM adjusted target: ${oldTarget}° → ${lstmResult.newTarget}°`, 'lstm');
+                                } else {
+                                    addMLLogEntry(`LSTM analyzed: Quality ${(lstmResult.quality_score * 100).toFixed(0)}%`, 'lstm');
+                                }
+                            }
+                        });
+                }
+                
+                // RL macro-adjustment (every 5 reps)
+                if (repCount % 5 === 0) {
+                    const sessionReps = exerciseManager.getSessionReps();
+                    const currentTarget = exerciseManager.getPersonalTarget();
+                    
+                    // Assign quality to reps for RL analysis
+                    sessionReps.forEach(rep => {
+                        const diff = Math.abs(rep.angle - rep.targetAngle);
+                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
+                    });
+                    
+                    mlIntegration.applyRLAdjustment(repCount, sessionReps, currentTarget)
+                        .then(rlResult => {
+                            if (rlResult) {
+                                // Update ML dashboard with RL data
+                                updateMLDashboard(null, {
+                                    consistency: rlResult.consistency,
+                                    fatigue: rlResult.fatigue,
+                                    successRate: rlResult.successRate,
+                                    lastAction: rlResult.actionName,
+                                    status: rlResult.newTarget !== currentTarget ? 'Target adjusted' : 'Maintaining level'
+                                });
+                                
+                                if (rlResult.newTarget !== currentTarget) {
+                                    exerciseManager.setPersonalTarget(rlResult.newTarget);
+                                    uiManager.updateTargetAngle(rlResult.newTarget);
+                                    addMLLogEntry(`RL ${rlResult.actionName}: ${currentTarget}° → ${rlResult.newTarget}°`, 'rl');
+                                } else {
+                                    addMLLogEntry(`RL: ${rlResult.actionName}`, 'rl');
+                                }
+                            }
+                        });
+                }
+            }
+            
+            // Form analysis (every 2 seconds)
+            mlIntegration.analyzeForm(angle, currentExercise, exerciseManager.getSessionReps())
+                .then(formResult => {
+                    if (formResult) {
+                        const sessionAngles = exerciseManager.getSessionAngles();
+                        const sessionReps = exerciseManager.getSessionReps();
+                        uiManager.updateFormAnalysis(sessionAngles, sessionReps, currentExercise, formResult);
+                    }
+                });
         }
-
-        // Show rest break notification
-        function showRestBreakNotification() {
-            updateFeedback(' Take a 30-second rest!');
-            setTimeout(() => {
-                updateFeedback('Ready to continue!');
-            }, 30000);
-        }
-
-        // ========== END RL INTEGRATION ==========
 
         // Initialize on page load
         window.addEventListener('load', async () => {
@@ -646,10 +970,10 @@
                     numPoses: 1
                 });
 
-                updateStatus('ready', 'Ready! Click Start Detection');
+                uiManager.updateStatus('ready', 'Ready! Click Start Detection');
                 document.getElementById('startBtn').disabled = false;
             } catch (error) {
-                updateStatus('error', 'Error: ' + error.message);
+                uiManager.updateStatus('error', 'Error: ' + error.message);
                 console.error(error);
             }
         });
@@ -659,12 +983,15 @@
             document.getElementById('startBtn').disabled = true;
             document.getElementById('stopBtn').disabled = false;
             sessionStartTime = Date.now();
-            sessionAngles = [];
-            sessionReps = [];
             userRewards.sessionRP = 0;
             
-            addAdaptiveLog(`Session started - Target: ${personalTarget}°`);
-            addAchievementLog(' Session started! Time to exercise!');
+            // Set session start time for ML integration
+            mlIntegration.setSessionStartTime(sessionStartTime);
+            
+            exerciseManager.reset();
+            
+            const target = exerciseManager.getPersonalTarget();
+            console.log(`Session started - Target: ${target || '--'}°`);
             
             detectPose();
         };
@@ -676,656 +1003,143 @@
             }
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
-            updateFeedback('Detection stopped');
+            uiManager.updateFeedback('Detection stopped');
         };
 
         // Reset exercise
         window.resetExercise = () => {
-            repCount = 0;
-            currentState = 'STANDING';
-            sessionAngles = [];
-            sessionReps = [];
+            exerciseManager.reset();
+            mlIntegration.reset();
             userRewards.sessionRP = 0;
             
-            document.getElementById('repCount').textContent = '0';
-            document.getElementById('sessionRP').textContent = '0';
-            document.getElementById('bestAngle').textContent = '--';
-            document.getElementById('avgAngle').textContent = '--';
-            document.getElementById('consistency').textContent = '--';
+            uiManager.updateRepCount(0);
+            uiManager.updateCurrentAngle(null);
+            uiManager.updateTargetAngle(null);
+            uiManager.updateFeedback('Exercise reset');
             
-            updateFeedback('Exercise reset');
-            addAdaptiveLog('Session reset - Ready for new session');
+            // Reset ML dashboard
+            document.getElementById('lstmQuality').textContent = '--';
+            document.getElementById('lstmROM').textContent = '--';
+            document.getElementById('lstmTarget').textContent = '--';
+            document.getElementById('lstmAdjustments').textContent = '0';
+            document.getElementById('lstmStatus').textContent = 'Waiting for reps...';
+            document.getElementById('rlConsistency').textContent = '--';
+            document.getElementById('rlFatigue').textContent = '--';
+            document.getElementById('rlSuccessRate').textContent = '--';
+            document.getElementById('rlLastAction').textContent = '--';
+            document.getElementById('rlStatus').textContent = 'Waiting for 5 reps...';
+            document.getElementById('mlAdjustmentLog').innerHTML = '<div class="ml-log-entry">🤖 System ready. Start exercising to see ML analysis.</div>';
+            
+            console.log('Session reset - Ready for new session');
         };
 
         // Change exercise
         window.changeExercise = () => {
             currentExercise = document.getElementById('exerciseSelect').value;
-            resetExercise();
+            exerciseManager.changeExercise(currentExercise);
+            window.resetExercise();
             
-            // Update target angle display
-            const targets = { squat: '90°', hip: '90°', shoulder: '90°' };
-            document.getElementById('targetAngle').textContent = targets[currentExercise];
+            console.log(`Changed to ${currentExercise}`);
         };
 
-        // Main detection loop
-        function detectPose() {
-            if (webcam.readyState >= 2) {
-                const result = poseLandmarker.detectForVideo(webcam, performance.now());
-                
-                // Clear canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
-
-                if (result.landmarks && result.landmarks.length > 0) {
-                    const landmarks = result.landmarks[0];
-                    
-                    // Draw skeleton
-                    drawSkeleton(landmarks);
-                    
-                    // Process exercise
-                    processExercise(landmarks);
-                }
-            }
+        // Toggle gamification panel
+        window.toggleGamification = () => {
+            const panel = document.getElementById('gamificationPanel');
+            const mlPanel = document.getElementById('mlDashboard');
             
-            animationId = requestAnimationFrame(detectPose);
-        }
-
-        // Draw skeleton
-        function drawSkeleton(landmarks) {
-            // Draw connections
-            const connections = [
-                [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
-                [11, 23], [12, 24], [23, 24],
-                [23, 25], [24, 26], [25, 27], [26, 28]
-            ];
-
-            ctx.strokeStyle = '#667eea';
-            ctx.lineWidth = 3;
-
-            connections.forEach(([start, end]) => {
-                const startPoint = landmarks[start];
-                const endPoint = landmarks[end];
+            if (panel.classList.contains('active')) {
+                panel.classList.remove('active');
+            } else {
+                // Close ML dashboard if open
+                mlPanel.classList.remove('active');
+                panel.classList.add('active');
                 
-                ctx.beginPath();
-                ctx.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
-                ctx.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
-                ctx.stroke();
-            });
+                // Update with current data
+                const repCount = exerciseManager.getRepCount();
+                const sessionReps = exerciseManager.getSessionReps();
+                const baseline = exerciseManager.getUserBaseline();
+                const personalTarget = exerciseManager.getPersonalTarget();
+                
+                uiManager.updateGamificationPanel(
+                    userRewards,
+                    repCount, 
+                    sessionReps, 
+                    personalTarget, 
+                    baseline
+                );
+            }
+        };
 
-            // Draw joints
-            ctx.fillStyle = '#ff6b6b';
-            landmarks.forEach((landmark, idx) => {
-                if (idx > 10) { // Skip face landmarks
-                    ctx.beginPath();
-                    ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 5, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-            });
-        }
-
-        // Process exercise logic
-        function processExercise(landmarks) {
-            let angle = 0;
+        // Toggle ML dashboard
+        window.toggleMLDashboard = () => {
+            const panel = document.getElementById('mlDashboard');
+            const gamPanel = document.getElementById('gamificationPanel');
             
-            if (currentExercise === 'squat') {
-                // Calculate knee angle
-                angle = calculateAngle(landmarks[23], landmarks[25], landmarks[27]);
-                checkSquat(angle);
-            } else if (currentExercise === 'hip') {
-                // Calculate hip angle
-                angle = calculateAngle(landmarks[11], landmarks[23], landmarks[25]);
-                checkHipExercise(angle);
-            } else if (currentExercise === 'shoulder') {
-                // Calculate shoulder angle
-                angle = calculateAngle(landmarks[23], landmarks[11], landmarks[13]);
-                checkShoulderExercise(angle);
+            if (panel.classList.contains('active')) {
+                panel.classList.remove('active');
+            } else {
+                // Close gamification if open
+                gamPanel.classList.remove('active');
+                panel.classList.add('active');
             }
-            
-            document.getElementById('currentAngle').textContent = Math.round(angle) + '°';
-        }
+        };
 
-        // Form analysis function (NEW!)
-        let lastFormCheck = 0;
-
-        // Generate helpful tips based on form analysis
-        function generateFormTips(result, currentAngle) {
-            const quality = parseFloat(result.form_quality);
-            const issues = result.issues || [];
-            const tips = [];
-
-            // Exercise-specific tips
-            if (currentExercise === 'squat') {
-                if (quality >= 95) {
-                    tips.push(' <strong>Excellent!</strong> Maintain this form.');
-                    tips.push('• Keep your chest up and core engaged');
-                    tips.push('• Breathe out as you rise');
-                } else if (quality >= 85) {
-                    tips.push(' <strong>Good form!</strong> Minor adjustments:');
-                    if (currentAngle > 100) {
-                        tips.push('• Go slightly deeper (aim for 90° knee angle)');
-                    }
-                    tips.push('• Keep knees aligned with toes');
-                    tips.push('• Maintain steady breathing rhythm');
-                } else if (quality >= 70) {
-                    tips.push(' <strong>Needs improvement:</strong>');
-                    if (currentAngle > 110) {
-                        tips.push('• <strong>Squat deeper</strong> - aim for thighs parallel to ground');
-                    }
-                    if (issues.includes('asymmetry')) {
-                        tips.push('• <strong>Balance evenly</strong> - distribute weight on both legs');
-                    }
-                    if (issues.includes('fast_movement')) {
-                        tips.push('• <strong>Slow down</strong> - take 2-3 seconds per rep');
-                    }
-                    tips.push('• Focus on controlled movement');
-                } else {
-                    tips.push(' <strong>Form needs work:</strong>');
-                    tips.push('• <strong>Lower depth:</strong> Bend knees to ~90°');
-                    tips.push('• <strong>Keep back straight:</strong> Don\'t lean forward');
-                    tips.push('• <strong>Feet position:</strong> Shoulder-width apart');
-                    tips.push('• <strong>Slow tempo:</strong> 2 seconds down, 2 seconds up');
-                }
-            } else if (currentExercise === 'hip') {
-                if (quality >= 95) {
-                    tips.push(' <strong>Perfect!</strong> Keep it up.');
-                    tips.push('• Maintain hip stability');
-                    tips.push('• Control the movement throughout');
-                } else if (quality >= 85) {
-                    tips.push(' <strong>Great work!</strong> Fine-tune:');
-                    tips.push('• Keep your core tight');
-                    tips.push('• Move through full range of motion');
-                } else if (quality >= 70) {
-                    tips.push(' <strong>Improve your form:</strong>');
-                    if (currentAngle > 100) {
-                        tips.push('• <strong>Lift higher</strong> - aim for 90° hip angle');
-                    }
-                    tips.push('• Keep pelvis stable (don\'t rotate)');
-                    tips.push('• Move smoothly, not jerky');
-                } else {
-                    tips.push(' <strong>Focus on basics:</strong>');
-                    tips.push('• <strong>Hip lift:</strong> Raise leg to hip level (90°)');
-                    tips.push('• <strong>Stay stable:</strong> Don\'t wobble or twist');
-                    tips.push('• <strong>Controlled pace:</strong> 2-3 seconds per rep');
-                }
-            } else if (currentExercise === 'shoulder') {
-                if (quality >= 95) {
-                    tips.push(' <strong>Excellent!</strong> Perfect shoulder form.');
-                    tips.push('• Keep shoulder blades stable');
-                    tips.push('• Maintain smooth rhythm');
-                } else if (quality >= 85) {
-                    tips.push(' <strong>Good job!</strong> Small tweaks:');
-                    tips.push('• Keep elbows slightly bent');
-                    tips.push('• Avoid shrugging shoulders');
-                } else if (quality >= 70) {
-                    tips.push(' <strong>Adjust your form:</strong>');
-                    if (currentAngle < 80) {
-                        tips.push('• <strong>Raise higher</strong> - lift arm to shoulder level');
-                    }
-                    tips.push('• Keep wrist aligned with shoulder');
-                    tips.push('• Don\'t arch your back');
-                } else {
-                    tips.push(' <strong>Form corrections needed:</strong>');
-                    tips.push('• <strong>Arm height:</strong> Lift to 90° (shoulder level)');
-                    tips.push('• <strong>Control:</strong> Slow, controlled movement');
-                    tips.push('• <strong>Posture:</strong> Stand tall, core engaged');
-                }
+        // Update ML dashboard
+        function updateMLDashboard(lstmData, rlData) {
+            // LSTM metrics
+            if (lstmData) {
+                document.getElementById('lstmQuality').textContent = 
+                    lstmData.quality ? `${(lstmData.quality * 100).toFixed(0)}%` : '--';
+                document.getElementById('lstmROM').textContent = 
+                    lstmData.rom ? `${lstmData.rom.toFixed(1)}°` : '--';
+                document.getElementById('lstmTarget').textContent = 
+                    lstmData.suggestedTarget ? `${Math.round(lstmData.suggestedTarget)}°` : '--';
+                document.getElementById('lstmAdjustments').textContent = 
+                    lstmData.adjustmentCount || 0;
+                document.getElementById('lstmStatus').textContent = 
+                    lstmData.status || 'Waiting for reps...';
             }
 
-            // General tips based on issues
-            if (issues.includes('fast_movement') && quality < 90) {
-                tips.push('');
-                tips.push(' <strong>Speed tip:</strong> Quality over speed - slower is better!');
-            }
-            if (issues.includes('asymmetry') && quality < 90) {
-                tips.push('');
-                tips.push(' <strong>Balance tip:</strong> Use mirror to check symmetry.');
-            }
-
-            return tips.join('<br>');
-        }
-
-        async function analyzeForm(currentAngle) {
-            // Check form every 2 seconds
-            const now = Date.now();
-            if (now - lastFormCheck < 2000) return;
-            lastFormCheck = now;
-
-            try {
-                // Build angles object for form analysis
-                const angles = {};
-                if (currentExercise === 'squat') {
-                    angles.knee_left = currentAngle;
-                    angles.knee_right = currentAngle; // Using same for demo
-                } else if (currentExercise === 'hip') {
-                    angles.hip_left = currentAngle;
-                } else if (currentExercise === 'shoulder') {
-                    angles.shoulder_left = currentAngle;
-                }
-
-                // Calculate movement speed (using time between reps)
-                const movementSpeed = sessionReps.length > 1 
-                    ? (sessionReps[sessionReps.length - 1].timestamp - sessionReps[sessionReps.length - 2].timestamp) / 1000
-                    : 3.0;
-
-                // Call simplified form API
-                const response = await fetch('http://localhost:5000/predict_form_simple', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        angles: angles,
-                        movement_speed: movementSpeed,
-                        exercise_type: currentExercise === 'hip' ? 'hip_abduction_left' : currentExercise
-                    })
-                });
-
-                if (!response.ok) {
-                    console.log('[Form API] Not available (using offline mode)');
-                    return;
-                }
-
-                const result = await response.json();
-
-                // Update UI
-                const formQualityEl = document.getElementById('formQuality');
-                const formStatusEl = document.getElementById('formStatus');
-                const formFeedbackEl = document.getElementById('formFeedback');
-                const formCorrectionsEl = document.getElementById('formCorrections');
-                const formCorrectionPanel = document.getElementById('formCorrectionPanel');
-                const formTipsEl = document.getElementById('formTips');
-
-                // Update quality score
-                formQualityEl.textContent = result.form_quality;
-                formQualityEl.style.color = result.is_correct ? '#10b981' : '#ef4444';
-
-                // Update status
-                formStatusEl.textContent = result.is_correct ? '✅ Correct' : '⚠️ Needs Work';
-                formStatusEl.style.color = result.is_correct ? '#10b981' : '#ef4444';
-
-                // Update feedback
-                if (result.feedback && result.feedback.length > 0) {
-                    formFeedbackEl.innerHTML = result.feedback.join('<br>');
-                }
-
-                // Show/hide corrections
-                if (result.corrections && result.corrections.length > 0) {
-                    formCorrectionPanel.style.display = 'block';
-                    formCorrectionsEl.innerHTML = result.corrections.join('<br>');
-                } else {
-                    formCorrectionPanel.style.display = 'none';
-                }
-
-                // Generate helpful tips based on form quality and issues
-                const tips = generateFormTips(result, currentAngle);
-                formTipsEl.innerHTML = tips;
-
-                console.log('[Form Analysis]', result);
-
-            } catch (error) {
-                console.log('[Form API] Error:', error.message);
-                // Fail silently - form analysis is optional
+            // RL metrics
+            if (rlData) {
+                document.getElementById('rlConsistency').textContent = 
+                    rlData.consistency ? `${(rlData.consistency * 100).toFixed(0)}%` : '--';
+                document.getElementById('rlFatigue').textContent = 
+                    rlData.fatigue ? `${(rlData.fatigue * 100).toFixed(0)}%` : '--';
+                document.getElementById('rlSuccessRate').textContent = 
+                    rlData.successRate ? `${(rlData.successRate * 100).toFixed(0)}%` : '--';
+                document.getElementById('rlLastAction').textContent = 
+                    rlData.lastAction || '--';
+                document.getElementById('rlStatus').textContent = 
+                    rlData.status || 'Waiting for 5 reps...';
             }
         }
 
-        // Squat checker
-        function checkSquat(kneeAngle) {
-            // Track angles for adaptive learning
-            sessionAngles.push(kneeAngle);
-            updateAdaptiveDisplay();
-
-            // Analyze form (NEW!)
-            analyzeForm(kneeAngle);
-
-            if (currentState === 'STANDING' && kneeAngle < 160) {
-                currentState = 'DESCENDING';
-                updateFeedback('Go down lower!');
-            } else if (currentState === 'DESCENDING' && kneeAngle < personalTarget) {
-                currentState = 'SQUATTING';
-                updateFeedback(`Excellent! Hit target: ${Math.round(kneeAngle)}°`);
-            } else if (currentState === 'SQUATTING' && kneeAngle > 160) {
-                currentState = 'STANDING';
-                
-                // Track rep data
-                const repData = {
-                    angle: Math.min(...sessionAngles.slice(-30)), // Best angle in last 30 frames
-                    timestamp: Date.now(),
-                    targetAngle: personalTarget
-                };
-                sessionReps.push(repData);
-                
-                // Award RP for the rep
-                const rpEarned = calculateRepRP(repData);
-                userRewards.sessionRP += rpEarned;
-                userRewards.totalRP += rpEarned;
-                
-                repCount++;
-                document.getElementById('repCount').textContent = repCount;
-                document.getElementById('sessionRP').textContent = userRewards.sessionRP;
-                document.getElementById('totalRP').textContent = userRewards.totalRP;
-                
-                updateFeedback(`Rep completed! +${rpEarned} RP`);
-                addAchievementLog(` Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
-                
-                // RL ADJUSTMENT: Apply every 5 reps
-                if (repCount % 5 === 0) {
-                    // Add quality assessment to session reps
-                    sessionReps.forEach(rep => {
-                        const diff = Math.abs(rep.angle - rep.targetAngle);
-                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
-                    });
-                    
-                    applyRLAdjustment(repCount, sessionReps, personalTarget).then(newTarget => {
-                        if (newTarget !== personalTarget) {
-                            personalTarget = newTarget;
-                            document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
-                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
-                        }
-                    });
-                }
-            }
-        }
-
-        // Calculate RP for a single rep
-        function calculateRepRP(repData) {
-            let rp = 10; // Base RP
-            
-            // Bonus for good form (within 10° of target)
-            const difference = Math.abs(repData.angle - repData.targetAngle);
-            if (difference <= 5) {
-                rp += 10; // Perfect form
-            } else if (difference <= 10) {
-                rp += 5; // Good form
-            }
-            
-            return rp;
-        }
-
-        // Hip exercise checker
-        // Hip exercise checker
-        function checkHipExercise(hipAngle) {
-            // Track angles for adaptive learning
-            sessionAngles.push(hipAngle);
-            updateAdaptiveDisplay();
-
-            // Analyze form (NEW!)
-            analyzeForm(hipAngle);
-
-            if (currentState === 'STANDING' && hipAngle < 150) {
-                currentState = 'LIFTING';
-                updateFeedback('Keep lifting!');
-            } else if (currentState === 'LIFTING' && hipAngle < personalTarget) {
-                currentState = 'TARGET';
-                updateFeedback(`Perfect! Hit target: ${Math.round(hipAngle)}°`);
-            } else if (currentState === 'TARGET' && hipAngle > 170) {
-                currentState = 'STANDING';
-                
-                // Track rep data
-                const repData = {
-                    angle: Math.min(...sessionAngles.slice(-30)),
-                    timestamp: Date.now(),
-                    targetAngle: personalTarget
-                };
-                sessionReps.push(repData);
-                
-                // Award RP for the rep
-                const rpEarned = calculateRepRP(repData);
-                userRewards.sessionRP += rpEarned;
-                userRewards.totalRP += rpEarned;
-                
-                repCount++;
-                document.getElementById('repCount').textContent = repCount;
-                document.getElementById('sessionRP').textContent = userRewards.sessionRP;
-                document.getElementById('totalRP').textContent = userRewards.totalRP;
-                
-                updateFeedback(`Rep completed! +${rpEarned} RP`);
-                addAchievementLog(` Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
-                
-                // RL ADJUSTMENT: Apply every 5 reps
-                if (repCount % 5 === 0) {
-                    sessionReps.forEach(rep => {
-                        const diff = Math.abs(rep.angle - rep.targetAngle);
-                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
-                    });
-                    
-                    applyRLAdjustment(repCount, sessionReps, personalTarget).then(newTarget => {
-                        if (newTarget !== personalTarget) {
-                            personalTarget = newTarget;
-                            document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
-                            console.log(` Target updated to ${Math.round(personalTarget)}°`);
-                        }
-                    });
-                }
-            }
-        }
-
-        // Shoulder exercise checker
-        // Shoulder exercise checker
-        function checkShoulderExercise(shoulderAngle) {
-            // Track angles for adaptive learning
-            sessionAngles.push(shoulderAngle);
-            updateAdaptiveDisplay();
-
-            // Analyze form (NEW!)
-            analyzeForm(shoulderAngle);
-
-            if (currentState === 'STANDING' && shoulderAngle > 50) {
-                currentState = 'RAISING';
-                updateFeedback('Keep raising!');
-            } else if (currentState === 'RAISING' && shoulderAngle > personalTarget) {
-                currentState = 'TARGET';
-                updateFeedback(`Perfect height! ${Math.round(shoulderAngle)}°`);
-            } else if (currentState === 'TARGET' && shoulderAngle < 30) {
-                currentState = 'STANDING';
-                
-                // Track rep data
-                const repData = {
-                    angle: Math.max(...sessionAngles.slice(-30)), // Max for shoulder (higher is better)
-                    timestamp: Date.now(),
-                    targetAngle: personalTarget
-                };
-                sessionReps.push(repData);
-                
-                // Award RP for the rep
-                const rpEarned = calculateRepRP(repData);
-                userRewards.sessionRP += rpEarned;
-                userRewards.totalRP += rpEarned;
-                
-                repCount++;
-                document.getElementById('repCount').textContent = repCount;
-                document.getElementById('sessionRP').textContent = userRewards.sessionRP;
-                document.getElementById('totalRP').textContent = userRewards.totalRP;
-                
-                updateFeedback(`Rep completed! +${rpEarned} RP`);
-                addAchievementLog(` Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
-                
-                // RL ADJUSTMENT: Apply every 5 reps
-                if (repCount % 5 === 0) {
-                    sessionReps.forEach(rep => {
-                        const diff = Math.abs(rep.angle - rep.targetAngle);
-                        rep.quality = diff <= 5 ? 'perfect' : (diff <= 10 ? 'good' : 'neutral');
-                    });
-                    
-                    applyRLAdjustment(repCount, sessionReps, personalTarget).then(newTarget => {
-                        if (newTarget !== personalTarget) {
-                            personalTarget = newTarget;
-                            document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
-                            console.log(` Target updated to ${Math.round(personalTarget)}°`);
-                        }
-                    });
-                }
-            }
-        }
-
-        // Calculate angle between 3 points
-        function calculateAngle(a, b, c) {
-            const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
-            let angle = Math.abs(radians * 180.0 / Math.PI);
-            if (angle > 180) angle = 360 - angle;
-            return angle;
-        }
-
-        // Update UI
-        function updateStatus(type, message) {
-            const status = document.getElementById('status');
-            status.className = 'status ' + type;
-            status.textContent = message;
-        }
-
-        function updateFeedback(message) {
-            document.getElementById('feedback').textContent = message;
-        }
-
-        // Update adaptive learning display
-        function updateAdaptiveDisplay() {
-            if (sessionAngles.length === 0) return;
-
-            const recentAngles = sessionAngles.slice(-50); // Last 50 angles
-            const bestAngle = Math.min(...recentAngles);
-            const avgAngle = recentAngles.reduce((a, b) => a + b, 0) / recentAngles.length;
-            
-            // Calculate consistency (lower standard deviation = better)
-            const variance = recentAngles.reduce((sum, angle) => sum + Math.pow(angle - avgAngle, 2), 0) / recentAngles.length;
-            const consistency = Math.max(0, 100 - Math.sqrt(variance));
-
-            document.getElementById('bestAngle').textContent = Math.round(bestAngle) + '°';
-            document.getElementById('avgAngle').textContent = Math.round(avgAngle) + '°';
-            document.getElementById('consistency').textContent = Math.round(consistency) + '%';
-
-            // Adjust personal target based on performance
-            if (sessionReps.length >= 5) {
-                const last5Reps = sessionReps.slice(-5);
-                const avg5 = last5Reps.reduce((sum, rep) => sum + rep.angle, 0) / 5;
-                
-                if (avg5 < personalTarget - 5) {
-                    // User consistently beating target, make it harder
-                    personalTarget = Math.max(60, personalTarget - 3);
-                    document.getElementById('personalTarget').textContent = personalTarget + '°';
-                    addAdaptiveLog(` Target adjusted to ${personalTarget}° - You're improving!`);
-                }
-            }
-
-            // Update difficulty level
-            const gap = personalTarget - 60; // 60° is expert level
-            let difficulty = 'Expert';
-            if (gap > 20) difficulty = 'Beginner';
-            else if (gap > 10) difficulty = 'Intermediate';
-            else if (gap > 5) difficulty = 'Advanced';
-            
-            document.getElementById('difficultyLevel').textContent = difficulty;
-        }
-
-        // Add achievement to log
-        function addAchievementLog(message) {
-            const list = document.getElementById('achievementList');
-            
-            // Clear placeholder
-            if (list.children.length === 1 && list.children[0].textContent.includes('Complete a session')) {
-                list.innerHTML = '';
-            }
-            
-            const item = document.createElement('div');
-            item.className = 'achievement-item';
-            item.textContent = message;
-            item.style.animation = 'slideIn 0.3s ease';
-            list.insertBefore(item, list.firstChild);
-            
-            // Keep only last 5
-            while (list.children.length > 5) {
-                list.removeChild(list.lastChild);
-            }
-        }
-
-        // Add adaptive log
-        function addAdaptiveLog(message) {
-            const log = document.getElementById('adaptiveLog');
-            
-            // Clear placeholder
-            if (log.children.length === 1 && log.children[0].textContent.includes('Adaptive system')) {
-                log.innerHTML = '';
-            }
-            
+        // Add log entry to ML dashboard
+        function addMLLogEntry(message, type = 'info') {
+            const log = document.getElementById('mlAdjustmentLog');
             const entry = document.createElement('div');
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            entry.style.marginBottom = '5px';
+            entry.className = 'ml-log-entry';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'lstm' ? '🧠' : type === 'rl' ? '🎯' : '📌';
+            entry.textContent = `${icon} [${timestamp}] ${message}`;
+            
             log.insertBefore(entry, log.firstChild);
             
-            // Keep only last 5
-            while (log.children.length > 5) {
+            // Keep only last 10 entries
+            while (log.children.length > 10) {
                 log.removeChild(log.lastChild);
             }
         }
 
-        // Test Gamification System
-        async function testGamification() {
-            // Import reward system (dynamic import works in modules)
-            const { processSessionRewards } = await import('../utils/rewardSystem.js');
-            const { checkNewAchievements } = await import('../utils/achievementSystem.js');
-            const { getSessionCompleteMessage } = await import('../utils/motivationEngine.js');
-            
-            // Simulate a completed session with 20 good reps
-            const sessionData = {
-                reps: Array(20).fill({
-                    angles: { min: 88, max: 95, avg: 92 },
-                    success: true,
-                    targetAngle: 90,
-                    timestamp: Date.now()
-                }),
-                sessionStats: {
-                    consistencyScore: 0.85,
-                    completionRate: 1.0,
-                    avgAngle: 92
-                }
-            };
-
-            const currentRewards = {
-                totalRP: parseInt(document.getElementById('rpDisplay').textContent) || 0,
-                currentLevel: parseInt(document.getElementById('levelDisplay').textContent) || 1,
-                streakDays: 3
-            };
-
-            const recentActivity = {
-                lastSessionDate: new Date(Date.now() - 86400000), // Yesterday
-                sessionsThisWeek: 2
-            };
-
-            // Calculate rewards
-            const result = processSessionRewards(
-                "demo-user",
-                sessionData,
-                currentRewards,
-                recentActivity
-            );
-
-            // Update display
-            document.getElementById('totalRP').textContent = result.newTotalRP;
-            document.getElementById('currentLevel').textContent = result.levelInfo.level;
-            document.getElementById('levelName').textContent = result.levelInfo.name;
-            document.getElementById('levelProgress').style.width = result.levelInfo.progressPercentage + '%';
-            document.getElementById('streakDays').textContent = result.streakInfo.streakDays + ' 🔥';
-
-            // Update achievement list
-            const achievementList = document.getElementById('achievementList');
-            achievementList.innerHTML = '';
-            result.achievements.forEach(achievement => {
-                addAchievementLog(achievement);
-            });
-
-            // Show results in feedback
-            const userAge = 25; // Example age
-            const completionMessage = getSessionCompleteMessage(userAge, result.rpEarned);
-            
-            updateFeedback(` ${completionMessage}`);
-            addAdaptiveLog(`Session test complete: +${result.rpEarned} RP earned!`);
-            
-            // Also log to console for details
-            console.log('Full Reward Result:', result);
-        }
-
         // Make functions globally available
-        window.startDetection = startDetection;
-        window.stopDetection = stopDetection;
-        window.changeExercise = changeExercise;
-        window.resetExercise = resetExercise;
-        window.testGamification = testGamification;
+        window.startDetection = window.startDetection;
+        window.stopDetection = window.stopDetection;
+        window.changeExercise = window.changeExercise;
+        window.resetExercise = window.resetExercise;
+        window.toggleGamification = window.toggleGamification;
+        window.toggleMLDashboard = window.toggleMLDashboard;
     </script>
 </body>
 </html>

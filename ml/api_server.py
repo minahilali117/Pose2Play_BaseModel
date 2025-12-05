@@ -1,17 +1,28 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from stable_baselines3 import DQN
 import numpy as np
 import os
 from pathlib import Path
 import sys
+import torch
+from scipy.interpolate import interp1d
 
 # Add ml directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from form_feedback import FormFeedbackGenerator
+from models.lstm_quality import ShoulderLSTM
+from personalization import RehabPersonalizer
 
-app = Flask(__name__)
+# Get paths
+ml_dir = Path(__file__).parent
+demo_dir = ml_dir.parent / 'demo'
+
+# Create Flask app with static files from demo directory
+app = Flask(__name__, 
+            static_folder=str(demo_dir),
+            static_url_path='')
 CORS(app)
 
 # Load RL model for difficulty adjustment
@@ -32,12 +43,85 @@ else:
     print(f"⚠️ Form classifier not found: {form_model_path}")
     form_classifier = None
 
+# ============================================================
+# LSTM MOVEMENT QUALITY MODEL (NEW)
+# ============================================================
+
+# Load LSTM model for shoulder movement quality
+lstm_model_path = './models/shoulder_lstm_model.pt'
+lstm_model = None
+lstm_metadata = None
+personalizer = None
+
+if os.path.exists(lstm_model_path):
+    try:
+        # Load checkpoint
+        checkpoint = torch.load(lstm_model_path, map_location='cpu')
+        
+        # Create model with saved architecture
+        lstm_model = ShoulderLSTM(
+            input_size=checkpoint['input_size'],
+            hidden_size=checkpoint.get('hidden_size', 64),
+            num_layers=checkpoint.get('num_layers', 2),
+            dropout=0.0  # No dropout for inference
+        )
+        
+        # Load trained weights
+        lstm_model.load_state_dict(checkpoint['model_state_dict'])
+        lstm_model.eval()  # Set to evaluation mode
+        
+        # Store metadata for preprocessing
+        lstm_metadata = {
+            'seq_len': checkpoint['seq_len'],
+            'angle_mean': np.array(checkpoint['angle_mean']),
+            'angle_std': np.array(checkpoint['angle_std']),
+            'global_max_rom': checkpoint['global_max_rom'],
+            'input_size': checkpoint['input_size']
+        }
+        
+        # Initialize personalizer
+        personalizer = RehabPersonalizer(
+            global_max_rom=lstm_metadata['global_max_rom'],
+            base_increment_deg=5.0,
+            max_extra_deg=30.0,
+            ema_alpha=0.3
+        )
+        
+        print(f"✅ Loaded LSTM model: {lstm_model_path}")
+        print(f"   - Input size: {lstm_metadata['input_size']}")
+        print(f"   - Sequence length: {lstm_metadata['seq_len']}")
+        print(f"   - Global max ROM: {lstm_metadata['global_max_rom']:.1f}°")
+        
+    except Exception as e:
+        print(f"⚠️ Error loading LSTM model: {e}")
+        lstm_model = None
+else:
+    print(f"⚠️ LSTM model not found: {lstm_model_path}")
+    print("   Train the model first with: python train_lstm.py")
+
+@app.route('/')
+def serve_demo():
+    """Serve the main demo page"""
+    return send_from_directory(str(demo_dir), 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve static files from demo directory"""
+    return send_from_directory(str(demo_dir), path)
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({
         'status': 'ok', 
         'rl_model_loaded': model is not None,
-        'form_classifier_loaded': form_classifier is not None
+        'form_classifier_loaded': form_classifier is not None,
+        'lstm_model_loaded': lstm_model is not None,
+        'personalizer_loaded': personalizer is not None,
+        'models': {
+            'rl': 'DQN_rehab_final.zip' if model else None,
+            'lstm': 'shoulder_lstm_model.pt' if lstm_model else None,
+            'form': 'form_classifier_rf.pkl' if form_classifier else None
+        }
     })
 
 @app.route('/predict', methods=['POST'])
@@ -220,12 +304,144 @@ def predict_form_simple():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
+# ============================================================
+# LSTM QUALITY PREDICTION ENDPOINT (NEW)
+# ============================================================
+
+def resample_sequence(sequence: np.ndarray, target_length: int) -> np.ndarray:
+    """
+    Resample a time-series sequence to fixed length using linear interpolation.
+    
+    Args:
+      sequence: [T_raw, F] array
+      target_length: Desired sequence length
+    
+    Returns:
+      [target_length, F] array
+    """
+    T_raw, F = sequence.shape
+    
+    if T_raw == target_length:
+        return sequence
+    
+    # Create interpolation function for each feature
+    original_indices = np.linspace(0, T_raw - 1, T_raw)
+    target_indices = np.linspace(0, T_raw - 1, target_length)
+    
+    resampled = np.zeros((target_length, F))
+    
+    for f in range(F):
+        interpolator = interp1d(original_indices, sequence[:, f], kind='linear')
+        resampled[:, f] = interpolator(target_indices)
+    
+    return resampled
+
+
+@app.route('/predict_quality', methods=['POST'])
+def predict_quality():
+    """
+    LSTM-based movement quality prediction for shoulder exercises.
+    
+    Expected input:
+    {
+        "user_id": "user_123",
+        "angles": [
+            [a11, a12, ..., a1F],
+            [a21, a22, ..., a2F],
+            ...
+        ]
+    }
+    
+    Where angles is a 2D list [T_raw, F] of raw joint angles for ONE shoulder rep.
+    
+    Returns:
+    {
+        "quality_score": 0.87,           # Movement quality [0, 1]
+        "rep_rom": 78.3,                 # Range of motion (degrees)
+        "personalized_target_angle": 105.0  # Adaptive target for next rep
+    }
+    """
+    try:
+        if lstm_model is None:
+            return jsonify({'error': 'LSTM model not loaded'}), 500
+        
+        if personalizer is None:
+            return jsonify({'error': 'Personalizer not initialized'}), 500
+        
+        data = request.json
+        user_id = data.get('user_id', 'default_user')
+        angles_raw = np.array(data.get('angles', []), dtype=np.float32)
+        
+        if len(angles_raw) == 0:
+            return jsonify({'error': 'No angles provided'}), 400
+        
+        # Ensure 2D array [T, F]
+        if angles_raw.ndim == 1:
+            angles_raw = angles_raw.reshape(-1, 1)
+        
+        T_raw, F = angles_raw.shape
+        
+        # Validate feature count
+        if F != lstm_metadata['input_size']:
+            return jsonify({
+                'error': f'Feature mismatch: expected {lstm_metadata["input_size"]}, got {F}'
+            }), 400
+        
+        # Validate minimum sequence length
+        if T_raw < 3:
+            return jsonify({'error': 'Sequence too short (need at least 3 frames)'}), 400
+        
+        # 1. Compute rep ROM (before normalization)
+        rep_rom = float(np.max(np.abs(angles_raw)))
+        
+        # 2. Resample to fixed sequence length
+        seq_len = lstm_metadata['seq_len']
+        angles_resampled = resample_sequence(angles_raw, seq_len)
+        
+        # 3. Normalize using training statistics
+        angles_normalized = (angles_resampled - lstm_metadata['angle_mean']) / lstm_metadata['angle_std']
+        
+        # 4. Convert to tensor [1, seq_len, F] (batch size 1)
+        angles_tensor = torch.FloatTensor(angles_normalized).unsqueeze(0)
+        
+        # 5. Run LSTM inference
+        with torch.no_grad():
+            logits = lstm_model(angles_tensor)
+            quality_score = float(torch.sigmoid(logits).item())
+        
+        # 6. Update personalization and get target
+        personalized_target = personalizer.update_and_get_target(
+            user_id=user_id,
+            rep_rom=rep_rom,
+            quality_score=quality_score
+        )
+        
+        # 7. Return results
+        return jsonify({
+            'quality_score': round(quality_score, 3),
+            'rep_rom': round(rep_rom, 2),
+            'personalized_target_angle': round(personalized_target, 1),
+            'user_id': user_id
+        })
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+
 if __name__ == '__main__':
-    print("🚀 RL API Server Starting...")
-    print("Available endpoints:")
-    print("  GET  /health              - Check server status")
-    print("  POST /predict             - Get RL difficulty adjustment action")
-    print("  POST /predict_form        - Analyze form with ML classifier (sensor data)")
-    print("  POST /predict_form_simple - Analyze form with rules (webcam angles)")
-    print("\nListening on http://localhost:5000")
-    app.run(host='localhost', port=5000, debug=True)
+    print("="*60)
+    print("🚀 Pose2Play - All-in-One Server")
+    print("="*60)
+    print("\nLoaded Models:")
+    print(f"  ✅ RL Model (DQN):          {model is not None}")
+    print(f"  ✅ Form Classifier:         {form_classifier is not None}")
+    print(f"  ✅ LSTM Quality Model:      {lstm_model is not None}")
+    print(f"  ✅ Personalizer:            {personalizer is not None}")
+    print("\n" + "="*60)
+    print("🌐 Open in browser: http://localhost:5000")
+    print("📷 Make sure to ALLOW camera access!")
+    print("="*60 + "\n")
+    app.run(host='localhost', port=5000, debug=False, threaded=True)
