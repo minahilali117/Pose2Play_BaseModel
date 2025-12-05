@@ -300,7 +300,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏋️ Pose2Play Base Model</h1>
+        <h1> Pose2Play Base Model</h1>
         <p class="subtitle">Real-time Pose Detection for Exercise Tracking</p>
 
         <div id="status" class="status loading">Initializing camera...</div>
@@ -377,7 +377,7 @@
                 <div class="progress-fill" id="levelProgress" style="width: 0%"></div>
             </div>
             <div style="margin-top: 15px;">
-                <strong>🏆 Recent Achievements:</strong>
+                <strong> Recent Achievements:</strong>
                 <div class="achievement-list" id="achievementList">
                     <div style="text-align: center; opacity: 0.7;">Complete a session to unlock achievements!</div>
                 </div>
@@ -386,7 +386,7 @@
 
         <!-- Adaptive Learning Panel -->
         <div class="adaptive-panel">
-            <div class="adaptive-header">🧠 Adaptive Learning System</div>
+            <div class="adaptive-header"> Adaptive Learning System</div>
             <div class="adaptive-stats">
                 <div class="adaptive-item">
                     <div class="adaptive-label">Standard Target</div>
@@ -421,7 +421,7 @@
         <!-- Form Quality Panel (NEW!) -->
         <div class="form-quality-panel" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px;">
             <div style="font-size: 18px; font-weight: 600; color: #2563eb; margin-bottom: 15px; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-                ✅ Form Quality Analysis
+                Form Quality Analysis
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div style="text-align: center;">
@@ -492,10 +492,10 @@
                 
                 if (!response.ok) throw new Error('API error');
                 const data = await response.json();
-                console.log('✅ RL API Response:', data);
+                console.log('RL API Response:', data);
                 return data.action; // 0-4
             } catch (error) {
-                console.warn('⚠️ RL API unavailable, using rule-based system:', error.message);
+                console.warn('RL API unavailable, using rule-based system:', error.message);
                 return null;
             }
         }
@@ -561,7 +561,7 @@
                 0                        // 1 dimension: padding
             ];
             
-            console.log('📊 RL State:', {
+            console.log(' RL State:', {
                 repCount,
                 last10Angles: last10Angles.slice(0, 3) + '...',
                 consistency: consistency.toFixed(2),
@@ -582,37 +582,37 @@
             switch(action) {
                 case 0: // Decrease difficulty (easier)
                     newTarget = currentTarget + 5;
-                    actionMessage = '📉 RL: Making it easier (+5°)';
+                    actionMessage = ' RL: Making it easier (+5°)';
                     addAdaptiveLog(actionMessage);
                     break;
                 case 1: // Maintain
                     newTarget = currentTarget;
-                    actionMessage = '➡️ RL: Maintaining difficulty';
+                    actionMessage = ' RL: Maintaining difficulty';
                     console.log(actionMessage);
                     break;
                 case 2: // Increase difficulty (harder)
                     newTarget = currentTarget - 5;
-                    actionMessage = '📈 RL: Increasing challenge (-5°)';
+                    actionMessage = ' RL: Increasing challenge (-5°)';
                     addAdaptiveLog(actionMessage);
                     break;
                 case 3: // Rest break
-                    actionMessage = '⏸️ RL: Take a 30-second rest!';
+                    actionMessage = '⏸ RL: Take a 30-second rest!';
                     addAdaptiveLog(actionMessage);
                     showRestBreakNotification();
                     break;
                 case 4: // Encouragement
-                    actionMessage = '💪 RL: You\'re doing great! Keep it up!';
+                    actionMessage = ' RL: You\'re doing great! Keep it up!';
                     addAchievementLog(actionMessage);
                     break;
             }
             
-            console.log('🎯 RL Action:', action, actionMessage);
+            console.log(' RL Action:', action, actionMessage);
             return newTarget;
         }
 
         // Show rest break notification
         function showRestBreakNotification() {
-            updateFeedback('⏸️ Take a 30-second rest!');
+            updateFeedback(' Take a 30-second rest!');
             setTimeout(() => {
                 updateFeedback('Ready to continue!');
             }, 30000);
@@ -664,7 +664,7 @@
             userRewards.sessionRP = 0;
             
             addAdaptiveLog(`Session started - Target: ${personalTarget}°`);
-            addAchievementLog('🏁 Session started! Time to exercise!');
+            addAchievementLog(' Session started! Time to exercise!');
             
             detectPose();
         };
@@ -796,18 +796,18 @@
             // Exercise-specific tips
             if (currentExercise === 'squat') {
                 if (quality >= 95) {
-                    tips.push('🌟 <strong>Excellent!</strong> Maintain this form.');
+                    tips.push(' <strong>Excellent!</strong> Maintain this form.');
                     tips.push('• Keep your chest up and core engaged');
                     tips.push('• Breathe out as you rise');
                 } else if (quality >= 85) {
-                    tips.push('👍 <strong>Good form!</strong> Minor adjustments:');
+                    tips.push(' <strong>Good form!</strong> Minor adjustments:');
                     if (currentAngle > 100) {
                         tips.push('• Go slightly deeper (aim for 90° knee angle)');
                     }
                     tips.push('• Keep knees aligned with toes');
                     tips.push('• Maintain steady breathing rhythm');
                 } else if (quality >= 70) {
-                    tips.push('⚡ <strong>Needs improvement:</strong>');
+                    tips.push(' <strong>Needs improvement:</strong>');
                     if (currentAngle > 110) {
                         tips.push('• <strong>Squat deeper</strong> - aim for thighs parallel to ground');
                     }
@@ -819,7 +819,7 @@
                     }
                     tips.push('• Focus on controlled movement');
                 } else {
-                    tips.push('⚠️ <strong>Form needs work:</strong>');
+                    tips.push(' <strong>Form needs work:</strong>');
                     tips.push('• <strong>Lower depth:</strong> Bend knees to ~90°');
                     tips.push('• <strong>Keep back straight:</strong> Don\'t lean forward');
                     tips.push('• <strong>Feet position:</strong> Shoulder-width apart');
@@ -827,44 +827,44 @@
                 }
             } else if (currentExercise === 'hip') {
                 if (quality >= 95) {
-                    tips.push('🌟 <strong>Perfect!</strong> Keep it up.');
+                    tips.push(' <strong>Perfect!</strong> Keep it up.');
                     tips.push('• Maintain hip stability');
                     tips.push('• Control the movement throughout');
                 } else if (quality >= 85) {
-                    tips.push('👍 <strong>Great work!</strong> Fine-tune:');
+                    tips.push(' <strong>Great work!</strong> Fine-tune:');
                     tips.push('• Keep your core tight');
                     tips.push('• Move through full range of motion');
                 } else if (quality >= 70) {
-                    tips.push('⚡ <strong>Improve your form:</strong>');
+                    tips.push(' <strong>Improve your form:</strong>');
                     if (currentAngle > 100) {
                         tips.push('• <strong>Lift higher</strong> - aim for 90° hip angle');
                     }
                     tips.push('• Keep pelvis stable (don\'t rotate)');
                     tips.push('• Move smoothly, not jerky');
                 } else {
-                    tips.push('⚠️ <strong>Focus on basics:</strong>');
+                    tips.push(' <strong>Focus on basics:</strong>');
                     tips.push('• <strong>Hip lift:</strong> Raise leg to hip level (90°)');
                     tips.push('• <strong>Stay stable:</strong> Don\'t wobble or twist');
                     tips.push('• <strong>Controlled pace:</strong> 2-3 seconds per rep');
                 }
             } else if (currentExercise === 'shoulder') {
                 if (quality >= 95) {
-                    tips.push('🌟 <strong>Excellent!</strong> Perfect shoulder form.');
+                    tips.push(' <strong>Excellent!</strong> Perfect shoulder form.');
                     tips.push('• Keep shoulder blades stable');
                     tips.push('• Maintain smooth rhythm');
                 } else if (quality >= 85) {
-                    tips.push('👍 <strong>Good job!</strong> Small tweaks:');
+                    tips.push(' <strong>Good job!</strong> Small tweaks:');
                     tips.push('• Keep elbows slightly bent');
                     tips.push('• Avoid shrugging shoulders');
                 } else if (quality >= 70) {
-                    tips.push('⚡ <strong>Adjust your form:</strong>');
+                    tips.push(' <strong>Adjust your form:</strong>');
                     if (currentAngle < 80) {
                         tips.push('• <strong>Raise higher</strong> - lift arm to shoulder level');
                     }
                     tips.push('• Keep wrist aligned with shoulder');
                     tips.push('• Don\'t arch your back');
                 } else {
-                    tips.push('⚠️ <strong>Form corrections needed:</strong>');
+                    tips.push(' <strong>Form corrections needed:</strong>');
                     tips.push('• <strong>Arm height:</strong> Lift to 90° (shoulder level)');
                     tips.push('• <strong>Control:</strong> Slow, controlled movement');
                     tips.push('• <strong>Posture:</strong> Stand tall, core engaged');
@@ -874,11 +874,11 @@
             // General tips based on issues
             if (issues.includes('fast_movement') && quality < 90) {
                 tips.push('');
-                tips.push('🐌 <strong>Speed tip:</strong> Quality over speed - slower is better!');
+                tips.push(' <strong>Speed tip:</strong> Quality over speed - slower is better!');
             }
             if (issues.includes('asymmetry') && quality < 90) {
                 tips.push('');
-                tips.push('⚖️ <strong>Balance tip:</strong> Use mirror to check symmetry.');
+                tips.push(' <strong>Balance tip:</strong> Use mirror to check symmetry.');
             }
 
             return tips.join('<br>');
@@ -1003,7 +1003,7 @@
                 document.getElementById('totalRP').textContent = userRewards.totalRP;
                 
                 updateFeedback(`Rep completed! +${rpEarned} RP`);
-                addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
+                addAchievementLog(` Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
                 
                 // RL ADJUSTMENT: Apply every 5 reps
                 if (repCount % 5 === 0) {
@@ -1077,7 +1077,7 @@
                 document.getElementById('totalRP').textContent = userRewards.totalRP;
                 
                 updateFeedback(`Rep completed! +${rpEarned} RP`);
-                addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
+                addAchievementLog(` Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
                 
                 // RL ADJUSTMENT: Apply every 5 reps
                 if (repCount % 5 === 0) {
@@ -1090,7 +1090,7 @@
                         if (newTarget !== personalTarget) {
                             personalTarget = newTarget;
                             document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
-                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
+                            console.log(` Target updated to ${Math.round(personalTarget)}°`);
                         }
                     });
                 }
@@ -1135,7 +1135,7 @@
                 document.getElementById('totalRP').textContent = userRewards.totalRP;
                 
                 updateFeedback(`Rep completed! +${rpEarned} RP`);
-                addAchievementLog(`✅ Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
+                addAchievementLog(` Rep ${repCount}: +${rpEarned} RP (${Math.round(repData.angle)}°)`);
                 
                 // RL ADJUSTMENT: Apply every 5 reps
                 if (repCount % 5 === 0) {
@@ -1148,7 +1148,7 @@
                         if (newTarget !== personalTarget) {
                             personalTarget = newTarget;
                             document.getElementById('targetAngle').textContent = Math.round(personalTarget) + '°';
-                            console.log(`🎯 Target updated to ${Math.round(personalTarget)}°`);
+                            console.log(` Target updated to ${Math.round(personalTarget)}°`);
                         }
                     });
                 }
@@ -1199,7 +1199,7 @@
                     // User consistently beating target, make it harder
                     personalTarget = Math.max(60, personalTarget - 3);
                     document.getElementById('personalTarget').textContent = personalTarget + '°';
-                    addAdaptiveLog(`📈 Target adjusted to ${personalTarget}° - You're improving!`);
+                    addAdaptiveLog(` Target adjusted to ${personalTarget}° - You're improving!`);
                 }
             }
 
@@ -1313,7 +1313,7 @@
             const userAge = 25; // Example age
             const completionMessage = getSessionCompleteMessage(userAge, result.rpEarned);
             
-            updateFeedback(`🎉 ${completionMessage}`);
+            updateFeedback(` ${completionMessage}`);
             addAdaptiveLog(`Session test complete: +${result.rpEarned} RP earned!`);
             
             // Also log to console for details
