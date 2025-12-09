@@ -1,8 +1,13 @@
 """
-Training Script for Shoulder LSTM Movement Quality Classifier
+Training Script for Multi-Exercise LSTM Movement Quality Classifier
 
-Trains a bidirectional LSTM model on UI-PRMD shoulder exercises to predict
+Trains a bidirectional LSTM model on UI-PRMD exercises to predict
 movement quality (correct vs incorrect form).
+
+Supports:
+  - Squat/knee-dominant: m01, m05
+  - Hip-dominant: m03, m06  
+  - Shoulder: m07, m10
 
 Usage:
   python -m ml.train_lstm
@@ -98,7 +103,10 @@ def train_epoch(model: nn.Module,
     # Progress bar for training batches
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}/{num_epochs} [train]", leave=False)
     
-    for sequences, labels, roms in pbar:
+    for batch_data in pbar:
+        # Unpack batch (now includes movement_id)
+        sequences, labels, roms, movement_ids = batch_data
+        
         # Move to device
         sequences = sequences.to(device)  # [batch, seq_len, features]
         labels = labels.squeeze().to(device)  # [batch]
@@ -153,7 +161,10 @@ def validate(model: nn.Module,
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}/{num_epochs} [val]  ", leave=False)
     
     with torch.no_grad():
-        for sequences, labels, roms in pbar:
+        for batch_data in pbar:
+            # Unpack batch (now includes movement_id)
+            sequences, labels, roms, movement_ids = batch_data
+            
             # Move to device
             sequences = sequences.to(device)
             labels = labels.squeeze().to(device)
@@ -226,10 +237,33 @@ def save_checkpoint(model: nn.Module,
     print(f"✅ Checkpoint saved to: {filepath}")
 
 
+def analyze_dataset_distribution(dataset, train_indices, val_indices):
+    """Print per-movement distribution in train/val splits."""
+    from collections import Counter
+    
+    train_movements = [dataset.movement_ids[i] for i in train_indices]
+    val_movements = [dataset.movement_ids[i] for i in val_indices]
+    
+    train_counter = Counter(train_movements)
+    val_counter = Counter(val_movements)
+    
+    print("\nDataset Split by Movement:")
+    print(f"  {'Movement':<10} {'Train':<10} {'Val':<10} {'Total':<10}")
+    print("  " + "-"*40)
+    
+    all_movements = sorted(set(train_movements + val_movements))
+    for movement in all_movements:
+        train_count = train_counter.get(movement, 0)
+        val_count = val_counter.get(movement, 0)
+        total = train_count + val_count
+        print(f"  {movement:<10} {train_count:<10} {val_count:<10} {total:<10}")
+    print()
+
+
 def train():
     """Main training loop."""
     print("="*60)
-    print("LSTM Training for Shoulder Movement Quality")
+    print("LSTM Training for Multi-Exercise Movement Quality")
     print("="*60)
     print(f"Device: {DEVICE}")
     print(f"Log file: {LOG_FILE}")
@@ -266,6 +300,9 @@ def train():
     
     print(f"Train samples: {len(train_dataset)}")
     print(f"Val samples: {len(val_dataset)}")
+    
+    # Analyze per-movement distribution
+    analyze_dataset_distribution(dataset, train_dataset.indices, val_dataset.indices)
     print()
     
     # Create dataloaders

@@ -1,10 +1,11 @@
 """
-UI-PRMD Dataset Loader for Shoulder Rehabilitation LSTM Training
+UI-PRMD Dataset Loader for Rehabilitation LSTM Training
 
-Loads segmented shoulder exercise repetitions from the UI-PRMD dataset.
-Focuses on:
-  - m07: Standing shoulder abduction
-  - m10: Standing shoulder scaption
+Loads segmented exercise repetitions from the UI-PRMD dataset.
+Supports:
+  - Squat/knee-dominant: m01 (Squat), m05 (Sit-to-Stand)
+  - Hip-dominant: m03 (Bridge), m06 (Romanian Deadlift)
+  - Shoulder: m07 (Shoulder Abduction), m10 (Shoulder Scaption)
 
 Each segmented file represents ONE repetition.
 Labels:
@@ -29,18 +30,24 @@ from tqdm import tqdm
 # CONFIGURATION: Adjust these for your dataset structure
 # ============================================================
 
-# Target movements for shoulder exercises
-TARGET_MOVEMENTS = ['m07', 'm10']  # m07=abduction, m10=scaption
+# Movement groups
+SQUAT_MOVEMENTS = ['m01', 'm05']  # m01=Squat, m05=Sit-to-Stand
+HIP_MOVEMENTS = ['m03', 'm06']    # m03=Bridge, m06=Romanian Deadlift
+SHOULDER_MOVEMENTS = ['m07', 'm10']  # m07=Shoulder Abduction, m10=Shoulder Scaption
+
+# Target movements for training (squat + hip + shoulder)
+TARGET_MOVEMENTS = SQUAT_MOVEMENTS + HIP_MOVEMENTS + SHOULDER_MOVEMENTS
 
 # Sequence length for LSTM (all reps resampled to this length)
 SEQ_LEN = 100
 
 # Joint angle column indices from UI-PRMD Kinect data
 # Based on UI-PRMD paper, Kinect provides 20 joints with 3 angle components each
-# For shoulder exercises, we focus on:
-#   - Shoulder joints (left/right): columns 15-20
-#   - Spine/trunk stabilization: columns 0-5
-#   - Elbow (for arm alignment): columns 21-26
+# For multi-exercise training, we use:
+#   - Spine/trunk: columns 0-5 (for all movements)
+#   - Shoulder joints: columns 15-20 (shoulder exercises)
+#   - Hip/knee joints: columns 21-26 (squat/hip exercises)
+# Using a comprehensive feature set for all movement types
 ANGLE_COLUMN_INDICES = list(range(0, 6)) + list(range(15, 27))  # 18 features total
 
 # Robust path resolution (works regardless of where repo is located)
@@ -196,7 +203,7 @@ class ShoulderRehabDataset(Dataset):
         Args:
           data_root: Path to UI-PRMD base directory (contains 'Segmented Movements' and 'Incorrect Segmented Movements')
                     If None, uses automatic path resolution from __file__
-          movements: List of movement codes (e.g., ['m07', 'm10'])
+          movements: List of movement codes (e.g., ['m01', 'm03', 'm05', 'm06', 'm07', 'm10'])
           seq_len: Target sequence length for LSTM
           column_indices: Which angle columns to use
           normalize: Whether to apply z-score normalization
@@ -219,6 +226,7 @@ class ShoulderRehabDataset(Dataset):
         self.sequences = []  # List of [seq_len, F] arrays
         self.labels = []     # List of binary labels (0 or 1)
         self.roms = []       # List of ROM values
+        self.movement_ids = []  # List of movement IDs (e.g., 'm01', 'm03')
         self.metadata = []   # List of dicts with filename info
         
         # Statistics for normalization
@@ -235,7 +243,7 @@ class ShoulderRehabDataset(Dataset):
     
     def _load_dataset(self):
         """Scan both correct and incorrect directories and load all matching files."""
-        print(f"Loading UI-PRMD shoulder dataset...")
+        print(f"Loading UI-PRMD multi-exercise dataset...")
         print(f"  Correct reps from: {self.correct_root}")
         print(f"  Incorrect reps from: {self.incorrect_root}")
         
@@ -261,6 +269,7 @@ class ShoulderRehabDataset(Dataset):
         skipped_count = 0
         num_correct = 0
         num_incorrect = 0
+        movement_counts = {}  # Track counts per movement
         
         # Use tqdm for progress bar
         for filepath, label in tqdm(all_files, desc="Loading UI-PRMD reps", unit="file"):
@@ -273,7 +282,7 @@ class ShoulderRehabDataset(Dataset):
                 skipped_count += 1
                 continue
             
-            # Filter by target movements (m07, m10)
+            # Filter by target movements (m01, m03, m05, m06, m07, m10)
             movement_code = f"m{metadata['movement']:02d}"
             if movement_code not in self.movements:
                 skipped_count += 1
@@ -297,7 +306,8 @@ class ShoulderRehabDataset(Dataset):
             self.sequences.append(resampled)
             self.labels.append(label)
             self.roms.append(rep_rom)
-            self.metadata.append({**metadata, 'filename': filename, 'label': label})
+            self.movement_ids.append(movement_code)
+            self.metadata.append({**metadata, 'filename': filename, 'label': label, 'movement': movement_code})
             
             loaded_count += 1
             
@@ -306,6 +316,14 @@ class ShoulderRehabDataset(Dataset):
                 num_correct += 1
             else:
                 num_incorrect += 1
+            
+            # Track per-movement counts
+            if movement_code not in movement_counts:
+                movement_counts[movement_code] = {'correct': 0, 'incorrect': 0}
+            if label == 1:
+                movement_counts[movement_code]['correct'] += 1
+            else:
+                movement_counts[movement_code]['incorrect'] += 1
         
         print(f"\n{'='*60}")
         print(f"Dataset Loading Summary:")
@@ -314,6 +332,11 @@ class ShoulderRehabDataset(Dataset):
         print(f"  Skipped files: {skipped_count}")
         print(f"  Correct reps (label=1): {num_correct}")
         print(f"  Incorrect reps (label=0): {num_incorrect}")
+        print(f"\n  Per-Movement Breakdown:")
+        for movement in sorted(movement_counts.keys()):
+            counts = movement_counts[movement]
+            total = counts['correct'] + counts['incorrect']
+            print(f"    {movement}: {total} total (✓{counts['correct']} / ✗{counts['incorrect']})")
         print(f"{'='*60}")
         
         if loaded_count == 0:
@@ -353,18 +376,20 @@ class ShoulderRehabDataset(Dataset):
     def __len__(self) -> int:
         return len(self.sequences)
     
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, str]:
         """
         Returns:
           sequence: [seq_len, F] tensor
           label: scalar tensor (0 or 1)
           rom: scalar tensor (ROM in degrees)
+          movement_id: string movement code (e.g., 'm01', 'm03')
         """
         sequence = torch.FloatTensor(self.sequences[idx])
         label = torch.FloatTensor([self.labels[idx]])
         rom = torch.FloatTensor([self.roms[idx]])
+        movement_id = self.movement_ids[idx]
         
-        return sequence, label, rom
+        return sequence, label, rom, movement_id
     
     def get_normalization_params(self) -> Dict[str, np.ndarray]:
         """Returns normalization parameters for saving to checkpoint."""

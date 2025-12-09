@@ -6,7 +6,8 @@ export class ExerciseManager {
         this.currentState = 'STANDING';
         this.sessionAngles = [];
         this.sessionReps = [];
-        this.personalTarget = null;
+        this.personalTarget = null; // Push target (challenge goal)
+        this.minimumThreshold = null; // Minimum required for rep to count
         this.userBaseline = null;
         this.currentPhase = 'BASELINE';
         this.baselineReps = [];
@@ -43,19 +44,30 @@ export class ExerciseManager {
             this.currentState = 'DESCENDING';
             return { feedback: 'Keep going down! 💪' };
         } 
-        else if (this.currentState === 'DESCENDING' && kneeAngle <= this.personalTarget) {
-            this.currentState = 'SQUATTING';
+        else if (this.currentState === 'DESCENDING' && kneeAngle <= this.minimumThreshold) {
+            // Rep counts if minimum threshold reached
+            this.currentState = 'THRESHOLD_MET';
             const achieved = Math.min(...this.sessionAngles.slice(-30));
+            
+            const reachedPushTarget = achieved <= this.personalTarget;
             
             const repData = {
                 angle: achieved,
                 timestamp: Date.now(),
-                targetAngle: this.personalTarget,
+                minimumThreshold: this.minimumThreshold,
+                pushTarget: this.personalTarget,
+                reachedPushTarget: reachedPushTarget,
                 baseline: this.userBaseline
             };
             
-            let feedbackMsg = `✅ Target reached! ${Math.round(achieved)}°`;
+            let feedbackMsg;
             let isPersonalBest = false;
+            
+            if (reachedPushTarget) {
+                feedbackMsg = `🎯 PUSH TARGET! ${Math.round(achieved)}°`;
+            } else {
+                feedbackMsg = `✅ Rep counted! ${Math.round(achieved)}° (Push: ${Math.round(this.personalTarget)}°)`;
+            }
             
             if (achieved < this.userBaseline) {
                 this.userBaseline = achieved;
@@ -74,7 +86,7 @@ export class ExerciseManager {
                 angleSequence: this.currentRepAngleSequence.slice()
             };
         }
-        else if (this.currentState === 'SQUATTING' && kneeAngle > 160) {
+        else if ((this.currentState === 'THRESHOLD_MET' || this.currentState === 'DESCENDING') && kneeAngle > 160) {
             this.currentState = 'STANDING';
             this.currentRepAngleSequence = [];
         }
@@ -110,19 +122,30 @@ export class ExerciseManager {
             this.currentState = 'LIFTING';
             return { feedback: 'Keep lifting! 💪' };
         } 
-        else if (this.currentState === 'LIFTING' && hipAngle <= this.personalTarget) {
-            this.currentState = 'TARGET';
+        else if (this.currentState === 'LIFTING' && hipAngle <= this.minimumThreshold) {
+            // Rep counts if minimum threshold reached
+            this.currentState = 'THRESHOLD_MET';
             const achieved = Math.min(...this.sessionAngles.slice(-30));
+            
+            const reachedPushTarget = achieved <= this.personalTarget;
             
             const repData = {
                 angle: achieved,
                 timestamp: Date.now(),
-                targetAngle: this.personalTarget,
+                minimumThreshold: this.minimumThreshold,
+                pushTarget: this.personalTarget,
+                reachedPushTarget: reachedPushTarget,
                 baseline: this.userBaseline
             };
             
-            let feedbackMsg = `✅ Target reached! ${Math.round(achieved)}°`;
+            let feedbackMsg;
             let isPersonalBest = false;
+            
+            if (reachedPushTarget) {
+                feedbackMsg = `🎯 PUSH TARGET! ${Math.round(achieved)}°`;
+            } else {
+                feedbackMsg = `✅ Rep counted! ${Math.round(achieved)}° (Push: ${Math.round(this.personalTarget)}°)`;
+            }
             
             if (achieved < this.userBaseline) {
                 this.userBaseline = achieved;
@@ -141,7 +164,7 @@ export class ExerciseManager {
                 angleSequence: this.currentRepAngleSequence.slice()
             };
         }
-        else if (this.currentState === 'TARGET' && hipAngle > 170) {
+        else if ((this.currentState === 'THRESHOLD_MET' || this.currentState === 'LIFTING') && hipAngle > 170) {
             this.currentState = 'STANDING';
             this.currentRepAngleSequence = [];
         }
@@ -179,19 +202,30 @@ export class ExerciseManager {
             this.currentRepAngleSequence = [];
             return { feedback: 'Keep raising! 💪' };
         } 
-        else if (this.currentState === 'RAISING' && shoulderAngle >= this.personalTarget) {
-            this.currentState = 'TARGET';
+        else if (this.currentState === 'RAISING' && shoulderAngle >= this.minimumThreshold) {
+            // Rep counts if minimum threshold reached
+            this.currentState = 'THRESHOLD_MET';
             const achieved = Math.max(...this.sessionAngles.slice(-30));
+            
+            const reachedPushTarget = achieved >= this.personalTarget;
             
             const repData = {
                 angle: achieved,
                 timestamp: Date.now(),
-                targetAngle: this.personalTarget,
+                minimumThreshold: this.minimumThreshold,
+                pushTarget: this.personalTarget,
+                reachedPushTarget: reachedPushTarget,
                 baseline: this.userBaseline
             };
             
-            let feedbackMsg = `✅ Target reached! ${Math.round(achieved)}°`;
+            let feedbackMsg;
             let isPersonalBest = false;
+            
+            if (reachedPushTarget) {
+                feedbackMsg = `🎯 PUSH TARGET! ${Math.round(achieved)}°`;
+            } else {
+                feedbackMsg = `✅ Rep counted! ${Math.round(achieved)}° (Push: ${Math.round(this.personalTarget)}°)`;
+            }
             
             if (achieved > this.userBaseline) {
                 this.userBaseline = achieved;
@@ -210,7 +244,7 @@ export class ExerciseManager {
                 angleSequence: this.currentRepAngleSequence.slice()
             };
         }
-        else if (this.currentState === 'TARGET' && shoulderAngle < 30) {
+        else if ((this.currentState === 'THRESHOLD_MET' || this.currentState === 'RAISING') && shoulderAngle < 30) {
             this.currentState = 'STANDING';
             this.currentRepAngleSequence = [];
         }
@@ -226,22 +260,30 @@ export class ExerciseManager {
             return { complete: false, message: `Baseline ${this.baselineReps.length}/${this.BASELINE_REP_COUNT}: ${exerciseAction} 💪` };
         }
         
-        // Calculate baseline
+        // Calculate baseline and set dual targets
         if (this.currentExercise === 'shoulder') {
             this.userBaseline = Math.max(...this.baselineReps);
-            this.personalTarget = Math.round(this.userBaseline + 5);
+            // Minimum threshold: 70% of baseline (achievable)
+            this.minimumThreshold = Math.round(this.userBaseline * 0.7);
+            // Push target: 10° above baseline (challenging)
+            this.personalTarget = Math.round(this.userBaseline + 10);
         } else {
+            // For squat/hip: lower angle = better ROM
             this.userBaseline = Math.min(...this.baselineReps);
-            this.personalTarget = Math.round(this.userBaseline - 5);
+            // Minimum threshold: 130% of baseline (easier - higher angle)
+            this.minimumThreshold = Math.round(this.userBaseline * 1.3);
+            // Push target: 10° below baseline (harder - lower angle)
+            this.personalTarget = Math.round(this.userBaseline - 10);
         }
         
         this.currentPhase = 'TRAINING';
         
         return { 
             complete: true, 
-            baseline: this.userBaseline, 
-            target: this.personalTarget,
-            message: `✅ Baseline: ${Math.round(this.userBaseline)}° | Target: ${Math.round(this.personalTarget)}°`
+            baseline: this.userBaseline,
+            minimumThreshold: this.minimumThreshold,
+            pushTarget: this.personalTarget,
+            message: `✅ Baseline: ${Math.round(this.userBaseline)}° | Min: ${Math.round(this.minimumThreshold)}° | Push: ${Math.round(this.personalTarget)}°`
         };
     }
 
@@ -289,5 +331,27 @@ export class ExerciseManager {
     // Setter methods
     setPersonalTarget(target) {
         this.personalTarget = target;
+    }
+    
+    getMinimumThreshold() {
+        return this.minimumThreshold;
+    }
+    
+    setMinimumThreshold(threshold) {
+        this.minimumThreshold = threshold;
+    }
+    
+    // Update both targets together (maintaining gap)
+    updateTargets(newPushTarget) {
+        if (this.currentExercise === 'shoulder') {
+            this.personalTarget = newPushTarget;
+            // Keep minimum at 70% of new target
+            this.minimumThreshold = Math.round(newPushTarget * 0.7);
+        } else {
+            // For squat/hip: push target is the lower (harder) angle
+            this.personalTarget = newPushTarget;
+            // Minimum threshold: 130% of push target (higher/easier angle)
+            this.minimumThreshold = Math.round(newPushTarget * 1.3);
+        }
     }
 }

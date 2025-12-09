@@ -6,7 +6,7 @@ Write-Host " Phase 7: RL Web Integration" -ForegroundColor Cyan
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host ""
 
-$mlPath = "D:\university\fyp\milestones\mid eval\ayaans work\Pose2Play_BaseModel\Pose2Play_BaseModel\ml"
+$mlPath = "D:\university\fyp\milestones\mid eval\Pose2Play_BaseModel\ml"
 
 # Start Flask server (serves both API and demo)
 Write-Host "Starting Pose2Play..." -ForegroundColor Cyan

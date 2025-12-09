@@ -7,6 +7,7 @@ export class UIManager {
             repCount: document.getElementById('repCount'),
             currentAngle: document.getElementById('currentAngle'),
             targetAngle: document.getElementById('targetAngle'),
+            minimumThreshold: document.getElementById('minimumThreshold'),
             formQuality: document.getElementById('formQuality'),
             formROM: document.getElementById('formROM'),
             formConsistency: document.getElementById('formConsistency'),
@@ -39,8 +40,40 @@ export class UIManager {
         this.elements.currentAngle.textContent = Math.round(angle) + '°';
     }
 
-    updateTargetAngle(angle) {
-        this.elements.targetAngle.textContent = Math.round(angle) + '°';
+    updateTargetAngle(angle, adjustment = null) {
+        if (angle === null) {
+            this.elements.targetAngle.textContent = '--';
+        } else {
+            this.elements.targetAngle.textContent = Math.round(angle) + '°';
+        }
+        
+        // Update target status if adjustment info provided
+        const targetStatus = document.getElementById('targetStatus');
+        if (targetStatus && adjustment !== null) {
+            if (adjustment > 0) {
+                targetStatus.textContent = '↓ Easier';
+                targetStatus.style.color = '#48bb78'; // Green
+            } else if (adjustment < 0) {
+                targetStatus.textContent = '↑ Harder';
+                targetStatus.style.color = '#f5576c'; // Red
+            } else {
+                targetStatus.textContent = '= Stable';
+                targetStatus.style.color = 'rgba(255,255,255,0.9)';
+            }
+        } else if (targetStatus) {
+            targetStatus.textContent = 'Challenge';
+            targetStatus.style.color = 'rgba(255,255,255,0.9)';
+        }
+    }
+    
+    updateMinimumThreshold(threshold) {
+        if (!this.elements.minimumThreshold) return;
+        
+        if (threshold === null) {
+            this.elements.minimumThreshold.textContent = '--';
+        } else {
+            this.elements.minimumThreshold.textContent = Math.round(threshold) + '°';
+        }
     }
 
     updateFormAnalysis(sessionAngles, sessionReps, currentExercise, formResult = null) {

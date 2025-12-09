@@ -133,7 +133,7 @@
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
 
@@ -631,9 +631,15 @@
                         <div class="stat-label">Current Angle</div>
                         <div class="stat-value" id="currentAngle">--</div>
                     </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+                        <div class="stat-label">Minimum</div>
+                        <div class="stat-value" id="minimumThreshold">--</div>
+                        <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;">Rep counts</div>
+                    </div>
                     <div class="stat-card highlight">
-                        <div class="stat-label">🎯 Your Target</div>
+                        <div class="stat-label">Push Target</div>
                         <div class="stat-value" id="targetAngle">--</div>
+                        <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;" id="targetStatus">Challenge</div>
                     </div>
                 </div>
 
@@ -848,9 +854,10 @@
             // Handle baseline establishment
             if (result && result.baseline) {
                 const baselineResult = exerciseManager.establishBaseline();
-                if (baselineResult.established) {
-                    uiManager.updateTargetAngle(baselineResult.personalTarget);
-                    uiManager.updateFeedback(`✅ Baseline: ${Math.round(baselineResult.baseline)}° | Target: ${Math.round(baselineResult.personalTarget)}°`);
+                if (baselineResult.complete) {
+                    uiManager.updateTargetAngle(baselineResult.pushTarget);
+                    uiManager.updateMinimumThreshold(baselineResult.minimumThreshold);
+                    uiManager.updateFeedback(baselineResult.message);
                 } else {
                     const exerciseAction = currentExercise === 'shoulder' ? 'Raise your arm as high as you can!' : 
                                           currentExercise === 'squat' ? 'Squat as deep as you can!' :
@@ -888,8 +895,9 @@
                                 
                                 if (lstmResult.newTarget) {
                                     const oldTarget = result.repData.targetAngle;
+                                    const adjustment = lstmResult.newTarget - oldTarget;
                                     exerciseManager.setPersonalTarget(lstmResult.newTarget);
-                                    uiManager.updateTargetAngle(lstmResult.newTarget);
+                                    uiManager.updateTargetAngle(lstmResult.newTarget, adjustment);
                                     addMLLogEntry(`LSTM adjusted target: ${oldTarget}° → ${lstmResult.newTarget}°`, 'lstm');
                                 } else {
                                     addMLLogEntry(`LSTM analyzed: Quality ${(lstmResult.quality_score * 100).toFixed(0)}%`, 'lstm');
@@ -898,7 +906,59 @@
                         });
                 }
                 
-                // RL macro-adjustment (every 5 reps)
+                // Comprehensive target adjustment (every 3 reps)
+                if (repCount % 3 === 0 && repCount > 0) {
+                    const sessionReps = exerciseManager.getSessionReps();
+                    const currentTarget = exerciseManager.getPersonalTarget();
+                    const baseline = exerciseManager.getUserBaseline();
+                    
+                    // Calculate comprehensive target adjustment
+                    const comprehensiveResult = mlIntegration.calculateComprehensiveTarget(
+                        currentTarget, 
+                        baseline, 
+                        sessionReps, 
+                        currentExercise
+                    );
+                    
+                    // Update ML dashboard with comprehensive factors
+                    updateMLDashboard(null, {
+                        consistency: mlIntegration.getConsistency(sessionReps),
+                        fatigue: mlIntegration.getFatigue(sessionReps),
+                        successRate: mlIntegration.getSuccessRate(sessionReps),
+                        lastAction: comprehensiveResult.reason,
+                        status: comprehensiveResult.adjustment !== 0 ? 'Target adjusted' : 'Maintaining level'
+                    });
+                    
+                    if (comprehensiveResult.newTarget !== currentTarget) {
+                        exerciseManager.updateTargets(comprehensiveResult.newTarget);
+                        
+                        // If minimum threshold also adjusted, apply it
+                        if (comprehensiveResult.newMinimum !== null) {
+                            exerciseManager.setMinimumThreshold(comprehensiveResult.newMinimum);
+                        }
+                        
+                        uiManager.updateTargetAngle(comprehensiveResult.newTarget, comprehensiveResult.adjustment);
+                        uiManager.updateMinimumThreshold(exerciseManager.getMinimumThreshold());
+                        addMLLogEntry(
+                            `Adaptive: Push ${currentTarget}° → ${comprehensiveResult.newTarget}°, Min → ${exerciseManager.getMinimumThreshold()}° (${comprehensiveResult.reason})`, 
+                            'rl'
+                        );
+                        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                        console.log('🎯 Comprehensive Target Adjustment');
+                        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                        console.log(`Push Target: ${currentTarget}° → ${comprehensiveResult.newTarget}°`);
+                        console.log(`Minimum: ${Math.round(currentTarget * 0.7)}° → ${exerciseManager.getMinimumThreshold()}°`);
+                        console.log(`Factors: ROM=${comprehensiveResult.factors.rom}, Fatigue=${comprehensiveResult.factors.fatigue}, Consistency=${comprehensiveResult.factors.consistency}`);
+                        console.log(`         Trend=${comprehensiveResult.factors.trend}, Duration=${comprehensiveResult.factors.duration}`);
+                        console.log(`Total Score: ${comprehensiveResult.factors.total} → Adjustment: ${comprehensiveResult.adjustment}°`);
+                        console.log(`Reason: ${comprehensiveResult.reason}`);
+                        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                    } else {
+                        addMLLogEntry(`Adaptive: ${comprehensiveResult.reason}`, 'rl');
+                    }
+                }
+                
+                // RL macro-adjustment (every 5 reps) - for comparison/logging
                 if (repCount % 5 === 0) {
                     const sessionReps = exerciseManager.getSessionReps();
                     const currentTarget = exerciseManager.getPersonalTarget();
@@ -912,21 +972,13 @@
                     mlIntegration.applyRLAdjustment(repCount, sessionReps, currentTarget)
                         .then(rlResult => {
                             if (rlResult) {
-                                // Update ML dashboard with RL data
-                                updateMLDashboard(null, {
-                                    consistency: rlResult.consistency,
-                                    fatigue: rlResult.fatigue,
-                                    successRate: rlResult.successRate,
-                                    lastAction: rlResult.actionName,
-                                    status: rlResult.newTarget !== currentTarget ? 'Target adjusted' : 'Maintaining level'
-                                });
-                                
+                                // Log RL recommendation for comparison
                                 if (rlResult.newTarget !== currentTarget) {
-                                    exerciseManager.setPersonalTarget(rlResult.newTarget);
-                                    uiManager.updateTargetAngle(rlResult.newTarget);
-                                    addMLLogEntry(`RL ${rlResult.actionName}: ${currentTarget}° → ${rlResult.newTarget}°`, 'rl');
-                                } else {
-                                    addMLLogEntry(`RL: ${rlResult.actionName}`, 'rl');
+                                    addMLLogEntry(
+                                        `RL suggests: ${rlResult.actionName} (${currentTarget}° → ${rlResult.newTarget}°)`, 
+                                        'info'
+                                    );
+                                    console.log(`🤖 RL Recommendation: ${rlResult.actionName} | ${currentTarget}° → ${rlResult.newTarget}°`);
                                 }
                             }
                         });
@@ -1015,6 +1067,7 @@
             uiManager.updateRepCount(0);
             uiManager.updateCurrentAngle(null);
             uiManager.updateTargetAngle(null);
+            uiManager.updateMinimumThreshold(null);
             uiManager.updateFeedback('Exercise reset');
             
             // Reset ML dashboard
